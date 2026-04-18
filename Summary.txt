@@ -1,0 +1,320 @@
+325. Introduction 
+Chào bạn, chúc mừng bạn đã hoàn thành bài học 325. Introduction. Dựa trên bản phiên âm bài giảng và các tài liệu (Jupyter Notebook, Power BI, PPT, CSV) bạn đã cung cấp, tôi xin tổng hợp lại toàn bộ kiến thức và luồng công việc của dự án này một cách chi tiết và rõ ràng nhất.
+________________________________________
+1. Tóm tắt cốt lõi
+Buổi học 325 là phần giới thiệu mở đầu cho một dự án thực tế toàn diện: Phân tích Doanh số Bán hàng theo Khu vực (Regional Sales Analysis). Buổi học này phác thảo toàn bộ vòng đời của một dự án Data Analytics (từ việc thu thập, làm sạch dữ liệu, phân tích khám phá EDA bằng Python, cho đến việc xây dựng Dashboard tương tác trên Power BI). Mục tiêu tối thượng là chuyển hóa dữ liệu thô (2014 - 2018) thành những insights có giá trị để hỗ trợ ban lãnh đạo ra quyết định chiến lược.
+________________________________________
+2. Nội dung chính
+Mục tiêu bài học:
+•	Hiểu rõ bài toán kinh doanh (Problem Statement): Các nhóm bán hàng đang thiếu một góc nhìn tổng quan, dựa trên dữ liệu về hiệu suất của từng khu vực. Điều này gây khó khăn cho việc xác định cơ hội tăng trưởng và phân bổ nguồn lực.
+•	Nắm bắt quy trình giải quyết vấn đề bằng cách kết hợp sức mạnh của Python (để phân tích sâu) và Power BI (để trực quan hóa).
+Các bước thực hiện trong toàn bộ dự án:
+1.	Đánh giá tổng quan dữ liệu (Data Overview): Tập dữ liệu bao gồm nhiều bảng (Sales Orders, Customers, Regions, Products, Budgets) được liên kết với nhau qua các khóa chính/khóa ngoại (ví dụ: Order Number là khóa chính của bảng Sales, Customer Index là khóa ngoại liên kết với bảng Customers).
+2.	Khám phá dữ liệu (EDA bằng Python): Sử dụng các kỹ thuật phân tích Univariate (Đơn biến), Bivariate (Song biến), vẽ biểu đồ Histogram, Heatmap để tìm ra các xu hướng ẩn sâu bên trong.
+3.	Xây dựng Dashboard (Power BI): * Trang 1: Executive Overview and Trends: Tập trung vào các chỉ số KPI theo thời gian (doanh thu hàng tháng, lợi nhuận, biên độ lợi nhuận vs đơn giá).
+o	Trang 2: Product and Channel Performance: Đi sâu vào hiệu suất của từng sản phẩm và kênh phân phối.
+o	Trang 3: Demographic and Customer Insights: Đánh giá tệp khách hàng, top 5 khách hàng tốt nhất/tệ nhất và hiệu suất theo từng tiểu bang.
+4.	Tùy biến & Sáng tạo: Giảng viên khuyến khích không chỉ "copy-paste" mà hãy nâng cấp Dashboard bằng các kỹ thuật nâng cao như: tạo thanh điều hướng (side menu bar), dùng Tooltips, hoặc Drill-through để tạo ra một portfolio ấn tượng.
+________________________________________
+3. Kiến trúc & Quy trình phân tích (Data Pipeline)
+Quy trình dữ liệu của dự án này tuân theo kiến trúc ETL và Data Analysis tiêu chuẩn:
+1.	Extract (Trích xuất): Đọc các file dữ liệu thô (Excel, CSV) chứa thông tin bán hàng, khách hàng, khu vực.
+2.	Transform & Clean (Làm sạch & Biến đổi - Thực hiện trên Python):
+o	Xử lý dữ liệu bị thiếu (Missing values), đặc biệt là trong cột ngân sách (Budgets).
+o	Chuyển đổi kiểu dữ liệu (đưa cột OrderDate về đúng định dạng Datetime).
+o	Merge/Join các bảng lại với nhau để tạo thành một bảng Master Data hoàn chỉnh (được xuất ra dưới dạng file Sales_data(EDA Exported).csv).
+3.	Analyze (Phân tích khám phá - EDA): Tìm kiếm các quy luật theo mùa vụ (Seasonality), phát hiện các giao dịch bất thường (Outliers), phân cụm khách hàng.
+4.	Visualize (Trực quan hóa - Power BI): Import file CSV đã được làm sạch vào Power BI, thiết lập Data Modeling và xây dựng các báo cáo tương tác.
+________________________________________
+4. Phân tích các file code được cung cấp (EDA Notebook)
+Dựa vào file EDA_Regional_Sales_Analysis.ipynb được cung cấp, quá trình EDA được chia thành các logic cụ thể. Dưới đây là tóm tắt logic của các khối code quan trọng kèm theo phần code mẫu minh họa cách tiếp cận mà bài học sử dụng:
+Python
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# ==========================================
+# KHỐI 1: DATA PROFILING & CLEANING (LÀM SẠCH)
+# Mục đích: Đọc dữ liệu, kiểm tra các giá trị null và chuẩn hóa kiểu dữ liệu.
+# ==========================================
+
+# Đọc dữ liệu từ file CSV
+sales_df = pd.read_csv('Regional Sales Dataset.xlsx - Sales Orders.csv')
+
+# Ép kiểu dữ liệu thời gian cho cột OrderDate để dễ phân tích theo tháng/năm
+sales_df['OrderDate'] = pd.to_datetime(sales_df['OrderDate'])
+
+# Kiểm tra dữ liệu bị thiếu (Missing Values)
+# Logic: Phải biết dữ liệu thiếu ở đâu để có phương án điền (fill) hoặc bỏ (drop)
+missing_values = sales_df.isnull().sum() 
+
+
+# ==========================================
+# KHỐI 2: UNIVARIATE & BIVARIATE ANALYSIS (PHÂN TÍCH ĐƠN BIẾN & SONG BIẾN)
+# Mục đích: Hiểu sự phân bổ của Doanh thu (Revenue) và Lợi nhuận (Profit).
+# ==========================================
+
+# Tính toán Doanh thu và Lợi nhuận (Logic: Doanh thu = Số lượng * Đơn giá)
+sales_df['Revenue'] = sales_df['Order Quantity'] * sales_df['Unit Price']
+sales_df['Profit'] = sales_df['Revenue'] - (sales_df['Total Unit Cost'] * sales_df['Order Quantity'])
+
+# Phân tích xem kênh bán hàng nào mang lại Doanh thu lớn nhất
+# Logic: Nhóm (groupby) theo Kênh (Channel) và tính tổng doanh thu
+channel_revenue = sales_df.groupby('Channel')['Revenue'].sum()
+
+
+# ==========================================
+# KHỐI 3: TREND & SEASONALITY (XU HƯỚNG & MÙA VỤ)
+# Mục đích: Phân tích biến động doanh thu theo từng tháng để lên kế hoạch tồn kho.
+# ==========================================
+
+# Trích xuất tháng và năm từ cột ngày tháng
+sales_df['Month_Year'] = sales_df['OrderDate'].dt.to_period('M')
+
+# Tính tổng doanh thu theo từng tháng
+monthly_trend = sales_df.groupby('Month_Year')['Revenue'].sum()
+
+
+# ==========================================
+# KHỐI 4: CORRELATION & OUTLIER DETECTION (TƯƠNG QUAN & NGOẠI LỆ)
+# Mục đích: Tìm ra các giao dịch bất thường và mối liên hệ giữa các chỉ số.
+# ==========================================
+
+# Tính toán ma trận tương quan để xem Đơn giá, Số lượng và Lợi nhuận liên quan với nhau ra sao
+correlation_matrix = sales_df[['Order Quantity', 'Unit Price', 'Revenue', 'Profit']].corr()
+
+# Tách file dữ liệu đã làm sạch ra CSV để đẩy lên Power BI tạo Dashboard
+# sales_df.to_csv('Sales_data(EDA Exported).csv', index=False)
+Chiến lược rút ra từ Notebook (Business Recommendations):
+•	Outlier Strategy: Loại trừ các đơn hàng sỉ số lượng lớn (bulk-order) khi tính giá trị trung bình để không làm sai lệch báo cáo.
+•	Margin Uplift: Cắt giảm chi phí cho các sản phẩm (SKU) có biên lợi nhuận thấp, tập trung đẩy mạnh chiến lược giá cho các sản phẩm hàng đầu.
+•	Seasonal Planning: Dồn ngân sách marketing vào tháng 1 (tháng thấp điểm) và tập trung khai thác đỉnh điểm vào tháng 5–6.
+________________________________________
+5. Kiến thức liên quan & mở rộng
+Để thực sự làm chủ dự án này và đưa nó vào Portfolio của mình, bạn nên lưu ý các khái niệm sau:
+•	Primary Key (Khóa chính) & Foreign Key (Khóa ngoại): * Mở rộng: Giảng viên đã nhắc đến Order Number là Primary Key của bảng Sales, và Customer Index là Foreign Key. Đây là nền tảng của Mô hình Dữ liệu Quan hệ (Relational Data Modeling). Trong Power BI, bạn sẽ dùng các khóa này để nối các bảng lại với nhau tạo thành mô hình Star Schema (Lược đồ hình sao) với Fact Table (Bảng Sự kiện - Sales) ở giữa và Dimension Tables (Bảng Chiều - Customers, Products, Regions) xung quanh.
+•	Time-series Analysis (Phân tích chuỗi thời gian):
+o	Mở rộng: Khi phân tích từ 2014 đến 2018, bạn không chỉ nhìn vào tổng doanh thu mà cần chú ý đến yếu tố Mùa vụ (Seasonality). Ví dụ, nếu biểu đồ tháng 12 năm nào cũng tăng vọt, đó là xu hướng mùa lễ hội. Điều này sẽ giúp doanh nghiệp (Acme Co.) chuẩn bị kho bãi và ngân sách chính xác hơn.
+•	Nâng cao trải nghiệm Dashboard (UI/UX trong Power BI):
+o	Mở rộng: Như giảng viên khuyến khích, để vượt qua một bản nháp (draft version), hãy áp dụng Drill-through (nhấp vào một khu vực để chuyển sang trang báo cáo chi tiết về khu vực đó), Tooltips tuỳ chỉnh (rê chuột vào biểu đồ để hiện ra một bảng thông tin nhỏ khác), và Bookmarks/Buttons để tạo menu điều hướng (Navigation bar) giống như một ứng dụng web thực thụ. Giám đốc/Khách hàng rất thích những thiết kế trực quan có tính tương tác cao như vậy.
+326. Project Workflow
+Chào bạn, dựa trên bản phiên âm của buổi học 326. Project Workflow cùng với các tài liệu dự án tổng thể bạn đã cung cấp từ trước, tôi xin tổng hợp lại nội dung kiến thức của buổi học này.
+Buổi học này mang tính chất lý thuyết nền tảng (sử dụng bảng trắng/Miro board) nhằm định hình tư duy và quy trình làm việc trước khi chúng ta thực sự bắt tay vào viết code Python.
+________________________________________
+1. Tóm tắt cốt lõi
+Buổi học 326 phác thảo bức tranh toàn cảnh về Quy trình Phân tích Dữ liệu (Data Analytics Workflow). Giảng viên nhấn mạnh sự khác biệt giữa công việc thực tế của một Data Analyst tại doanh nghiệp (thường là các công việc phân mảnh như làm Excel, cào dữ liệu, hoặc chỉ dọn dẹp dữ liệu) so với việc xây dựng một Portfolio Project (cần làm trọn vẹn từ đầu đến cuối để chứng minh năng lực). Mục tiêu của buổi học là chốt lại luồng công việc sẽ thực hiện: Dùng Python để làm sạch và EDA, sau đó dùng Power BI để làm Dashboard.
+________________________________________
+2. Nội dung chính
+Mục tiêu bài học:
+•	Hiểu rõ từng bước trong vòng đời của một dự án phân tích dữ liệu.
+•	Xác định rõ vai trò của các công cụ (Tech Stack) sẽ được sử dụng trong dự án Regional Sales Analysis.
+•	Đặt ra kỳ vọng đúng đắn về công việc Data Analyst trong môi trường doanh nghiệp thực tế.
+Các nội dung và khái niệm được thảo luận:
+•	Bản chất của "End-to-End Project": Trong thực tế, hiếm khi một Data Analyst tự mình làm từ A-Z (từ thu thập, kỹ sư dữ liệu đến xây dựng AI). Tuy nhiên, để có một Portfolio xin việc ấn tượng, chúng ta phải tự đóng vai trò xây dựng một dự án hoàn chỉnh.
+•	Hệ sinh thái công cụ (Tech Stack) trong dự án:
+o	Python: Công cụ chính để làm sạch và Phân tích khám phá dữ liệu (EDA).
+o	Thống kê (Statistics): Được ứng dụng ngầm bên trong quá trình EDA (tìm phân phối, outlier).
+o	Excel: Nguồn cung cấp dữ liệu thô ban đầu (Flat files).
+o	Power BI: Nâng cấp từ Excel để tạo Dashboard tương tác ở bước cuối cùng.
+o	SQL: Không bắt buộc trong dự án này, nhưng giảng viên đặc biệt khuyến khích học viên tự tạo thử thách bằng cách tích hợp SQL (xem phần mở rộng bên dưới).
+•	Tính chất lặp (Iterative Process): Quá trình Làm sạch dữ liệu (Data Cleaning) và Khám phá dữ liệu (EDA) không phải là một đường thẳng. Nó là một vòng lặp: Bạn phân tích -> phát hiện lỗi sai -> quay lại làm sạch -> tiếp tục phân tích.
+________________________________________
+3. Kiến trúc & Quy trình phân tích (Data Analytics Pipeline)
+Giảng viên đã vẽ ra một Workflow tiêu chuẩn mà bạn có thể áp dụng cho bất kỳ công ty hay domain nào:
+1.	Business Understanding (Hiểu bài toán kinh doanh - Bước quan trọng nhất): Xác định mục tiêu. Ví dụ: Phân tích hiệu suất bán hàng cho công ty thương mại điện tử (như Amazon, Flipkart) để tìm cơ hội tăng trưởng.
+2.	Data Understanding & Collection (Hiểu và Thu thập dữ liệu): * Thực tế: Bạn phải tự đi tìm dữ liệu từ Data Warehouse (như Snowflake), Data Lake, hoặc NoSQL (MongoDB), viết API connectors hoặc Web Scraping.
+o	Trong dự án này: Dữ liệu đã được chuẩn bị sẵn dưới dạng Flat files (Các file CSV/Excel được cung cấp).
+3.	Data Preparation & EDA (Tiền xử lý & Khám phá): Load dữ liệu vào Python, xử lý missing values, chuyển đổi kiểu dữ liệu và tìm ra các insights (như đã phân tích ở file Jupyter Notebook ở buổi trước).
+4.	Actionable Outcomes (Đầu ra của dự án): Sau khi có insights từ bước 3, luồng công việc chia làm 2 hướng tuỳ theo mô hình công ty:
+o	Hướng 1 (Dành cho Data/BI Analyst): Chuyển insights thành Dashboard (dùng Power BI/Tableau) để báo cáo cho sếp. (Đây là hướng dự án chúng ta sẽ làm).
+o	Hướng 2 (Dành cho Data Scientist): Đẩy dữ liệu đã làm sạch cho team AI/Machine Learning để họ xây dựng mô hình dự đoán (Predictive Analytics).
+________________________________________
+4. Phân tích file code
+Lưu ý: Buổi học 326 hoàn toàn là lý thuyết (giảng giải trên Miro Board) để chuẩn bị tư duy, không có file code mới được sinh ra trong bài này. Luồng tư duy này chính là kim chỉ nam để viết ra file EDA_Regional_Sales_Analysis.ipynb mà chúng ta đã phân tích ở bài học trước.
+________________________________________
+5. Kiến thức liên quan & mở rộng
+Từ những lời khuyên của giảng viên trong video, đây là những kiến thức mở rộng rất hữu ích để bạn nâng cấp dự án và CV của mình:
+•	Mẹo "Hack" CV bằng cách tích hợp SQL (SQL Integration Hack):
+o	Giảng viên có nói: "Take this project video first, do it without SQL and then just bombard the data into SQL database. Connect SQL to Power BI..."
+o	Cách thực hiện: Thay vì import 6 file CSV trực tiếp vào Power BI, bạn hãy cài đặt MySQL hoặc SQL Server trên máy. Dùng Python (thư viện sqlalchemy) đẩy các file CSV này thành các bảng (tables) trong Database. Cuối cùng, mở Power BI và chọn Get Data -> SQL Server Database.
+o	Lợi ích: Khi nhà tuyển dụng nhìn vào Portfolio của bạn, họ sẽ thấy bạn biết thiết kế Database, viết truy vấn SQL và kết nối hệ thống thực tế, thay vì chỉ biết kéo thả file CSV.
+•	Cơ sở dữ liệu doanh nghiệp (Enterprise Databases): Giảng viên nhắc đến các thuật ngữ bạn nên biết để không bỡ ngỡ khi đi làm:
+o	Data Warehouse (Kho dữ liệu): Lưu trữ dữ liệu cấu trúc cực lớn đã qua xử lý (Ví dụ: Snowflake, Amazon Redshift, Google BigQuery).
+o	Data Lake (Hồ dữ liệu): Lưu trữ mọi loại dữ liệu (cấu trúc, bán cấu trúc, phi cấu trúc) chưa qua xử lý.
+o	MongoDB: Đại diện cho NoSQL Database, thường lưu dữ liệu dưới dạng JSON/Document (khác với dạng bảng cột của SQL).
+•	Sự khác biệt giữa DA và DS: Qua chia sẻ của giảng viên, bạn có thể thấy ranh giới công việc: Data Analyst tập trung vào "chuyện gì đã xảy ra trong quá khứ" (Dashboarding, Reporting), trong khi Data Scientist dùng dữ liệu đó để tập trung vào "chuyện gì sẽ xảy ra trong tương lai" (Machine Learning, Generative AI).
+
+327. Understanding the data
+Chào bạn, dựa trên bản phiên âm của bài học 327. Understanding the data và bối cảnh các file dữ liệu (CSV/Excel) bạn đã cung cấp, tôi xin tổng hợp lại kiến thức của bài học này.
+Đây là một bước đệm cực kỳ quan trọng về tư duy cơ sở dữ liệu (Database Thinking) trước khi chúng ta thực sự viết code Python để phân tích.
+________________________________________
+1. Tóm tắt cốt lõi
+Bài học 327 tập trung vào việc thấu hiểu cấu trúc dữ liệu bằng cách xây dựng Sơ đồ Mối quan hệ Thực thể (Entity-Relationship Diagram - ERD). Trước khi tiến hành EDA (Phân tích khám phá) hay tạo Dashboard, Data Analyst cần phải biết rõ các bảng dữ liệu (tables) liên kết với nhau như thế nào, đâu là Khóa chính (Primary Key), đâu là Khóa ngoại (Foreign Key) và quy mô của các mối quan hệ (1-nhiều hay 1-1). Việc này sẽ quyết định cách chúng ta merge dữ liệu trong Python và xây dựng Data Modeling trong Power BI sau này.
+________________________________________
+2. Nội dung chính
+Mục tiêu bài học:
+•	Xác định các thực thể (các bảng dữ liệu) và thuộc tính (các cột) trong bộ dữ liệu Regional Sales.
+•	Thiết lập các mối liên kết logic giữa bảng giao dịch chính và các bảng thông tin chi tiết.
+•	Xử lý các cột dữ liệu "mồ côi" (không có thông tin đối chiếu).
+Các bước thực hiện tư duy trong buổi học:
+1.	Phân tích bảng trung tâm (Sales Orders): Nhận diện cột Order Number là khóa chính (duy nhất cho mỗi đơn hàng) và tìm các cột mang tính chất "Index" (chỉ mục) đóng vai trò là Khóa ngoại để móc nối sang các bảng khác.
+2.	Khớp nối (Mapping) với các bảng vệ tinh:
+o	Đối chiếu Customer Name Index sang bảng Customers.
+o	Đối chiếu Delivery Region Index sang bảng Regions.
+o	Đối chiếu Product Description Index sang bảng Products.
+3.	Phát hiện dữ liệu khuyết liên kết: Giảng viên nhận thấy cột Warehouse Code trong bảng Sales Orders không có bất kỳ bảng (sheet) nào khác để giải nghĩa. Quyết định được đưa ra là sẽ tạm thời bỏ qua (skip) cột này trong việc xây dựng mô hình quan hệ.
+4.	Liên kết gián tiếp: Bảng 2017 Budgets không nối trực tiếp với bảng Sales, mà nối với bảng Products thông qua cột Product Name.
+5.	Xác định bản chất mối quan hệ (Cardinality): Đánh giá xem quan hệ giữa các bảng là 1-1 (One-to-One) hay 1-N (One-to-Many).
+________________________________________
+3. Kiến trúc & Quy trình phân tích (Mô hình Dữ liệu - ERD)
+Dựa trên phân tích của giảng viên, bộ dữ liệu Regional Sales tuân theo kiến trúc lõi sau:
+•	Bảng Trung tâm (Fact Table): Sales Orders
+o	Primary Key (Khóa chính): Order Number
+•	Các Mối quan hệ 1-N (Một - Nhiều):
+o	Customers (Khách hàng) $\rightarrow$ Sales Orders: * Liên kết qua: Customer Index = Customer Name Index.
+	Logic: 1 khách hàng có thể mua nhiều đơn hàng (1-to-N).
+o	Regions (Khu vực) $\rightarrow$ Sales Orders:
+	Liên kết qua: ID = Delivery Region Index.
+	Logic: 1 khu vực địa lý có thể nhận giao nhiều đơn hàng (1-to-N).
+o	Products (Sản phẩm) $\rightarrow$ Sales Orders:
+	Liên kết qua: Index = Product Description Index.
+	Logic: 1 sản phẩm có thể nằm trong nhiều đơn đặt hàng khác nhau (1-to-N).
+•	Mối quan hệ mở rộng (Snowflake):
+o	Products $\leftrightarrow$ 2017 Budgets: Hai bảng này được liên kết với nhau thông qua cột Product Name.
+________________________________________
+4. Phân tích các file code
+(Bỏ qua mục này vì bài học 327 hoàn toàn là lý thuyết tư duy về cấu trúc dữ liệu, chưa tiến hành gõ code Python). Tuy nhiên, logic ERD này chính là tiền đề để viết hàm pd.merge() mà bạn sẽ thấy trong các file code EDA thực tế.
+________________________________________
+5. Kiến thức liên quan & mở rộng
+Để thực sự làm chủ cách tổ chức dữ liệu như giảng viên đang hướng dẫn, bạn cần nắm vững các khái niệm mở rộng sau:
+•	Fact Table vs. Dimension Table (Bảng Sự kiện & Bảng Chiều):
+o	Fact Table (Bảng Sự kiện): Trong dự án này là bảng Sales Orders. Nó chứa các con số có thể tính toán, cộng trừ nhân chia được (như Order Quantity, Unit Price, Line Total) và chứa các Khóa ngoại. Dữ liệu trong bảng này tăng lên mỗi ngày.
+o	Dimension Table (Bảng Chiều): Là các bảng Customers, Regions, Products. Chúng chứa ngữ cảnh (Text) mô tả chi tiết cho Fact Table (Ví dụ: Ai mua? Mua ở đâu? Tên sản phẩm là gì?).
+•	Star Schema (Lược đồ hình sao):
+o	Mạng lưới ERD mà giảng viên vừa vẽ bằng lời mô tả chính là nền tảng của Star Schema. Đây là mô hình tối ưu nhất cho báo cáo Power BI. Bảng Sales nằm ở trung tâm (như lõi ngôi sao), các bảng Customers, Regions, Products nằm ở xung quanh (các cánh sao).
+•	Auto-Detect Relationship trong Power BI:
+o	Giảng viên có nhắc: "Power BI will automatically be able to see the relationship...". Khi bạn Import các file CSV này vào Power BI, AI của công cụ sẽ tự động tìm các cột có tên giống nhau hoặc dữ liệu giống nhau để nối lại. Tuy nhiên, AI thường xuyên nối sai. Việc bạn vẽ được ERD ra giấy/Miro board trước sẽ giúp bạn tự tay chỉnh sửa lại sơ đồ (Data Modeling) trong Power BI một cách chính xác tuyệt đối.
+
+
+328. Data Cleaning
+Chào bạn, dựa trên bản phiên âm của bài học 328. Data Cleaning và chuỗi kiến thức từ các bài trước, tôi xin tổng hợp lại toàn bộ nội dung của buổi học này.
+Đây là một buổi học rất quan trọng, mang tính thực hành cao, nơi chúng ta chính thức biến các lý thuyết về sơ đồ quan hệ (ERD) ở bài 327 thành những dòng code Python để nhào nặn dữ liệu thô thành một bảng dữ liệu Master (bảng tổng) hoàn chỉnh phục vụ cho quá trình EDA.
+________________________________________
+1. Tóm tắt cốt lõi
+Buổi học 328 tập trung vào bước Data Cleaning & Wrangling (Làm sạch và Nhào nặn dữ liệu) sử dụng thư viện pandas trong Python. Mục tiêu cốt lõi là đọc tất cả các sheet dữ liệu phân tán, liên kết (merge) chúng lại với nhau dựa trên Khóa chính/Khóa ngoại đã xác định ở bài trước, loại bỏ các cột dư thừa/không mang lại giá trị phân tích, và xử lý các lỗi logic về mặt thời gian (cụ thể là dữ liệu ngân sách năm 2017). Kết quả đầu ra là một DataFrame duy nhất, sạch sẽ và sẵn sàng cho việc phân tích chuyên sâu.
+________________________________________
+2. Nội dung chính
+Mục tiêu bài học: Chuẩn bị một bộ dữ liệu hoàn chỉnh, không có cột rác và đúng logic kinh doanh để trả lời cho Problem Statement: "Xác định các sản phẩm, kênh và khu vực mang lại doanh thu/lợi nhuận cao nhất".
+Các bước thực hiện trong buổi học:
+1.	Thiết lập môi trường & Load dữ liệu: Import các thư viện lõi (Pandas, Matplotlib, Seaborn). Đọc toàn bộ các sheet từ file Excel vào Python dưới dạng Dictionary of DataFrames.
+2.	Kiểm tra & Sửa lỗi cấu trúc cơ bản: Phát hiện sheet State Regions bị lỗi dòng tiêu đề (header bị đẩy xuống dòng dữ liệu đầu tiên) và xử lý nó.
+3.	Merging (Gộp bảng): Đây là bước quan trọng nhất. Sử dụng hàm merge() của Pandas (với cơ chế Left Join) để đính kèm thông tin Khách hàng, Sản phẩm, Khu vực và Ngân sách vào bảng Sales Orders gốc.
+4.	Loại bỏ dữ liệu rác (Drop Columns): * Xóa các cột định danh (Index/ID) trùng lặp sinh ra sau khi merge.
+o	Dùng Domain Knowledge (Kiến thức ngành) để xóa các cột không giúp ích cho phân tích doanh số (như: Time zone, Population, Water Area, Currency...).
+5.	Chuẩn hóa tên cột: Đổi tên toàn bộ các cột về chữ thường, thay khoảng trắng bằng dấu gạch dưới (snake_case) và đổi tên các cột cho dễ hiểu (ví dụ: đổi Line Total thành Revenue).
+6.	Xử lý logic Ngân sách (Budget Logic): Bảng Budget chỉ chứa dữ liệu của năm 2017. Khi gộp bảng, Pandas tự động điền ngân sách này cho tất cả các năm (2014-2018). Giảng viên dùng code để "xóa trắng" (chuyển thành Null/NaN) các giá trị ngân sách của những đơn hàng không thuộc năm 2017.
+________________________________________
+3. Kiến trúc & Quy trình phân tích (Data Pipeline)
+Trong hệ thống Data Analytics Workflow, buổi học này đảm nhận toàn bộ khâu Transform (Biến đổi) trong kiến trúc ETL:
+•	Extract: Lấy dữ liệu từ file Excel nhiều sheets (pd.read_excel(sheet_name=None)).
+•	Transform:
+o	Data Integration: Kết hợp dữ liệu (Merge).
+o	Data Reduction: Giảm chiều dữ liệu (Drop redundant columns).
+o	Data Cleaning: Sửa lỗi Header, sửa logic dữ liệu (Nulling non-2017 budgets).
+o	Data Standardization: Chuẩn hóa tên cột.
+•	Load (Chuẩn bị): Lưu trữ tạm thời trên RAM (df_final) để bước sang file Jupyter Notebook làm EDA (như file EDA_Regional_Sales_Analysis.ipynb bạn đã cung cấp).
+________________________________________
+4. Phân tích các file code (Dựa trên phiên âm)
+Dưới đây là phần code logic được tái hiện lại từ phiên âm của giảng viên, kèm theo các giải thích trực tiếp (comments) bằng tiếng Việt:
+Python
+# ==========================================
+# KHỐI 1: IMPORT & ĐỌC DỮ LIỆU
+# Mục đích: Đưa toàn bộ các sheet Excel vào bộ nhớ Python
+# ==========================================
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Tham số sheet_name=None giúp đọc tất cả các sheet vào một Dictionary
+sheets = pd.read_excel('Regional Sales Dataset.xlsx', sheet_name=None)
+
+# Tách từng sheet thành các DataFrame riêng biệt
+df_sales = sheets['Sales Orders']
+df_customers = sheets['Customers']
+df_products = sheets['Products']
+df_regions = sheets['Regions']
+df_state_regions = sheets['State Regions']
+df_budgets = sheets['2017 Budgets']
+
+# ==========================================
+# KHỐI 2: SỬA LỖI HEADER CHO BẢNG STATE REGIONS
+# Mục đích: Đưa dòng dữ liệu đầu tiên lên làm Header (Tiêu đề cột)
+# ==========================================
+# Lấy dòng đầu tiên (chứa tên cột bị sai vị trí) làm Header mới
+new_header = df_state_regions.iloc[0] 
+# Gán Header mới cho DataFrame
+df_state_regions.columns = new_header 
+# Xóa dòng đầu tiên đó đi và reset lại số thứ tự (index)
+df_state_regions = df_state_regions[1:].reset_index(drop=True)
+
+# ==========================================
+# KHỐI 3: MERGING (GỘP BẢNG) DỰA TRÊN MÔ HÌNH ERD
+# Mục đích: Nối các thông tin chi tiết vào bảng Sales
+# ==========================================
+# Dùng Left Join để giữ nguyên toàn bộ đơn hàng trong df_sales
+# Nối bảng Khách Hàng
+df = df_sales.merge(df_customers, how='left', left_on='Customer Name Index', right_on='Customer Index')
+
+# Nối bảng Sản Phẩm
+df = df.merge(df_products, how='left', left_on='Product Description Index', right_on='Index')
+
+# Nối bảng Khu Vực (Regions)
+df = df.merge(df_regions, how='left', left_on='Delivery Region Index', right_on='ID')
+
+# Nối bảng State Regions (Lấy cột State Code làm cầu nối)
+df = df.merge(df_state_regions[['State Code', 'Region']], how='left', on='State Code')
+
+# Nối bảng Budgets 2017 (Nối trực tiếp qua tên sản phẩm)
+df = df.merge(df_budgets, how='left', on='Product Name')
+
+# ==========================================
+# KHỐI 4: LỌC CỘT VÀ CHUẨN HÓA (DATA REDUCTION)
+# Mục đích: Xóa các cột rác, đổi tên cột chuẩn mực
+# ==========================================
+# Danh sách các cột cần giữ lại (Loại bỏ Time zone, Population, Currency...)
+cols_to_keep = [
+    'OrderNumber', 'OrderDate', 'Customer Names', 'Channel', 'Product Name', 
+    'Order Quantity', 'Unit Price', 'Line Total', 'Total Unit Cost', 
+    'State Code', 'County', 'State', 'Region', 'latitude', 'longitude', '2017 Budgets'
+]
+# Ghi đè DataFrame chỉ với các cột đã chọn
+df = df[cols_to_keep]
+
+# Đổi tên cột cho dễ thao tác, chuyển Line Total thành Revenue (Doanh thu)
+df.rename(columns={
+    'OrderNumber': 'order_number',
+    'OrderDate': 'order_date',
+    'Customer Names': 'customer_name',
+    'Product Name': 'product_name',
+    'Line Total': 'revenue',           # <-- Feature Engineering cơ bản
+    '2017 Budgets': 'budget'
+}, inplace=True)
+
+# ==========================================
+# KHỐI 5: XỬ LÝ LỖI LOGIC THỜI GIAN (BUDGETS)
+# Mục đích: Ngân sách năm 2017 không được áp dụng cho các năm khác
+# ==========================================
+# Ép kiểu dữ liệu thời gian cho Order Date
+df['order_date'] = pd.to_datetime(df['order_date'])
+
+# Logic: Tìm các dòng có năm KHÁC 2017, cập nhật cột 'budget' của các dòng đó thành giá trị rỗng (NaN)
+df.loc[df['order_date'].dt.year != 2017, 'budget'] = pd.NA
+________________________________________
+5. Kiến thức liên quan & mở rộng
+Trong buổi học này, giảng viên đã áp dụng một số kinh nghiệm thực chiến cực kỳ quan trọng mà một Data Analyst cần có:
+•	Tại sao luôn dùng Left Join thay vì Inner Join?
+o	Trong kinh doanh, bảng Sales Orders là "sự thật" (Fact). Việc dùng Left Join đảm bảo rằng không có bất kỳ một hóa đơn bán hàng nào bị mất đi, ngay cả khi thông tin khách hàng hay thông tin khu vực đó bị thiếu hoặc bị lỗi trong hệ thống dữ liệu.
+•	Tư duy loại bỏ biến (Feature Dropping): * Giảng viên đã bỏ cột Population (Dân số) và Area Code (Mã vùng) vì thấy không liên quan đến bài toán Doanh thu. Tuy nhiên, giảng viên có mở rộng rằng: Nếu bài toán yêu cầu phân tích "Tỷ lệ thâm nhập thị trường" (Market Penetration = Doanh thu / Dân số), thì cột Population lại rất quan trọng. Điều này minh chứng cho việc: Việc giữ hay bỏ dữ liệu phụ thuộc hoàn toàn vào Business Objective (Mục tiêu kinh doanh).
+•	Xử lý Temporal Mismatch (Lệch pha thời gian):
+o	Hành động "xóa trắng" cột Budget của các năm 2014, 2015, 2016, 2018 là một tư duy xử lý dữ liệu xuất sắc. Nếu không làm bước này, khi đưa dữ liệu lên Power BI, tổng ngân sách (Total Budget) của 5 năm sẽ bị tính sai (bị nhân lên gấp 5 lần), dẫn đến việc so sánh KPI Thực tế (Actual) vs Kế hoạch (Budget) hoàn toàn sai lệch. Giá trị pd.NA (Null) sẽ được Power BI hoặc hàm Sum() của Pandas tự động bỏ qua khi tính toán.
+

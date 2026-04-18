@@ -1,0 +1,200 @@
+
+USA REGIONAL SALES ANALYSIS
+Phân tích Dự án End-to-End
+Từ Data Collection → EDA (Python) → Dashboard (Power BI)
+
+Khóa học: Master Data Analysis
+Python | EDA | Power BI | DAX
+ 
+ 
+1. Tổng quan Dự án
+1.1. Mô tả dự án
+USA Regional Sales Analysis là một dự án portfolio toàn diện về phân tích dữ liệu bán hàng theo vùng miền tại Mỹ (2014–2018). Dự án bao trùm toàn bộ quy trình Data Analytics: từ thu thập dữ liệu, làm sạch, chuyển đổi, phân tích khám phá (EDA) bằng Python, đến xây dựng dashboard trên Power BI. Mục tiêu là xác định các yếu tố thúc đẩy doanh thu và lợi nhuận, phát hiện xu hướng theo mùa, và hỗ trợ ra quyết định chiến lược.
+1.2. Problem Statement
+Các đội sales thường thiếu cái nhìn dựa trên dữ liệu về hiệu suất từng vùng, khiến cho việc xác định cơ hội tăng trưởng và tối ưu tài nguyên trở nên khó khăn. Dự án phân tích dữ liệu sales 2014–2018 để xác định các yếu tố chính thúc đẩy doanh thu và lợi nhuận qua sản phẩm, kênh bán hàng, và vùng miền; phát hiện xu hướng theo mùa và outliers; đối chiếu hiệu suất với ngân sách. Từ đó tối ưu giá, khuyến mãi và mở rộng thị trường.
+1.3. Mục tiêu cuối cùng
+•	Xác định sản phẩm, kênh bán hàng, và vùng miền có hiệu suất cao nhất
+•	Phát hiện xu hướng theo mùa và các bất thường trong dữ liệu
+•	Phân khúc khách hàng theo doanh thu và lợi nhuận
+•	Xây dựng dashboard Power BI tương tác để stakeholders sử dụng hàng ngày
+1.4. Đầu vào và Đầu ra
+Đầu vào (Input): File Excel (Regional_Sales_Dataset.xlsx) chứa 6 sheet dữ liệu thô: Sales Orders (64,104 records), Customers (175 records), Products (30 records), Regions (994 records), State Regions (49 records), 2017 Budgets (30 records).
+Đầu ra (Output): (1) File CSV đã làm sạch và tạo features mới (Sales_data_EDA_Exported_.csv – 64,104 records, 21 cột). (2) Notebook EDA với 15 phân tích và insights. (3) Dashboard Power BI 3 trang (SALES_REPORT.pbix). (4) Slide tóm tắt dự án (PPT).
+ 
+2. Cấu trúc File Dự án
+2.1. Danh sách file và nhiệm vụ
+Tên File	Loại	Nhiệm vụ / Mô tả
+Regional_Sales_Dataset.xlsx	Input	Dữ liệu gốc chứa 6 sheet: Sales Orders (fact table), Customers, Products, Regions, State Regions, 2017 Budgets (dimension tables). Đây là điểm khởi đầu của toàn bộ dự án.
+EDA_Regional_Sales_Analysis.ipynb	Processing	Jupyter Notebook (Google Colab) chứa toàn bộ code Python: import dữ liệu, data profiling, cleaning, merging 6 bảng, feature engineering, và 15 phân tích EDA với biểu đồ + insights. Gồm 80 cells (markdown + code).
+Sales_data_EDA_Exported_.csv	Output/Input	File CSV đầu ra của notebook, đầu vào của Power BI. Chứa 64,104 records và 21 cột đã làm sạch, merge, và tạo features mới (profit, profit_margin_pct, order_month_name, order_month_num).
+SALES_REPORT.pbix	Output	Dashboard Power BI hoàn chỉnh 3 trang: Executive Overview, Product & Channel Performance, Geographic & Customer Insights. Chứa KPI cards, line charts, bar charts, pie charts, map, filter panel, bookmarks.
+PPT_Regional_Sales_Analysis.pptx	Output	Slide PowerPoint tóm tắt dự án: problem statement, workflow, key insights, recommendations. Dùng để trình bày cho stakeholders.
+2.2. Sơ đồ liên kết giữa các file
+Các file liên kết với nhau theo chuỗi tuần tự:
+Regional_Sales_Dataset.xlsx  →  (nhập vào Python Notebook)
+EDA_Regional_Sales_Analysis.ipynb  →  (xử lý, phân tích, xuất CSV)
+Sales_data_EDA_Exported_.csv  →  (nhập vào Power BI)
+SALES_REPORT.pbix  →  (sản phẩm cuối cùng – dashboard tương tác)
+File Excel gốc là đầu vào duy nhất. Notebook đọc file này, thực hiện toàn bộ xử lý và phân tích, rồi xuất ra CSV. Power BI nhận CSV làm data source, tạo thêm DAX measures, và dựng dashboard. PPT tóm tắt kết quả để trình bày.
+ 
+3. Workflow End-to-End của Dự án
+3.1. Giai đoạn 1: Business Understanding
+Hiểu bài toán kinh doanh: phân tích dữ liệu sales theo vùng miền để tìm cơ hội tăng trưởng, tối ưu nguồn lực, và hỗ trợ ra quyết định. Tưởng tượng bạn làm cho một công ty e-commerce và đây là dữ liệu sales của họ.
+3.2. Giai đoạn 2: Data Understanding & ERD
+Phân tích Entity Relationship Diagram để hiểu cấu trúc dữ liệu. Xác định Primary Key và Foreign Key của từng bảng:
+•	Sales Orders: PK = Order Number; FK = Customer Name Index, Delivery Region Index, Product Description Index
+•	Customers: PK = Customer Index → liên kết với Sales Orders
+•	Products: PK = Index → liên kết với Sales Orders; Product Name → liên kết với 2017 Budgets
+•	Regions: PK = id → liên kết với Sales Orders qua Delivery Region Index
+•	State Regions: PK = State Code → liên kết với Sales Orders
+•	2017 Budgets: liên kết với Products qua Product Name
+Quan hệ: Customer → Order (1:N), Region → Order (1:N), Product → Order (1:N). Sales Orders là fact table trung tâm, các bảng khác là dimension tables.
+3.3. Giai đoạn 3: Data Collection
+Dữ liệu từ file Excel công khai (Kaggle). Trong thực tế có thể đến từ database (Snowflake, MongoDB, PostgreSQL), data warehouse, hoặc API. Sử dụng pd.read_excel(file_path, sheet_name=None) để đọc tất cả 6 sheet cùng lúc.
+3.4. Giai đoạn 4: Data Cleaning & Wrangling
+Bước này thực hiện trong notebook (Cells 15–24), bao gồm:
+1.	Sửa header bị lệch ở bảng State Regions (dòng đầu tiên chứa tên cột thật)
+2.	Kiểm tra null values và duplicates
+3.	Merge 6 bảng thành 1 DataFrame duy nhất bằng left join (5 lần merge liên tiếp)
+4.	Loại bỏ cột thừa sau merge (Customer Index, Index, id, State Code)
+5.	Chọn cột cần giữ dựa trên domain knowledge (15 cột)
+6.	Đổi tên cột thành snake_case cho nhất quán
+7.	Xử lý budget: gán null cho các năm không phải 2017
+3.5. Giai đoạn 5: Feature Engineering
+Tạo các cột mới từ dữ liệu có sẵn (Cell 26):
+•	total_cost = quantity × cost (tổng chi phí mỗi dòng)
+•	profit = revenue – total_cost (lợi nhuận)
+•	profit_margin_pct = (profit / revenue) × 100 (tỷ lệ lợi nhuận %)
+•	order_month_name = tên tháng (January, February...) – dùng cho biểu đồ
+•	order_month_num = số tháng (1–12) – dùng để sort đúng thứ tự trong Power BI
+3.6. Giai đoạn 6: Exploratory Data Analysis (15 phân tích)
+Notebook thực hiện 15 loại phân tích, bao gồm univariate, bivariate, multivariate, temporal, và geospatial:
+#	Phân tích	Biểu đồ	Loại EDA	Insight chính
+1	Monthly Sales Trend	Line chart	Temporal	Doanh thu ổn định $23–26M/tháng
+2	Monthly Trend (gộp)	Line chart	Temporal	May cao nhất (~$102M)
+3	Top 10 Products Revenue	Bar chart	Univariate	Product 26 dẫn đầu $118M
+4	Top 10 Profit Margin	Bar chart	Univariate	Product 18 margin cao nhất
+5	Sales by Channel	Pie chart	Univariate	Wholesale 54%, Dist 31%
+6	AOV Distribution	Histogram	Univariate	Right-skewed, mode $50–60K
+7	Margin vs Unit Price	Scatter	Bivariate	Không tương quan rõ
+8	Price Dist per Product	Box plot	Bivariate	Nhiều outlier giá cao
+9	Sales by US Region	Bar chart	Univariate	West dẫn đầu ~$360M
+10	Sales by State (Map)	Choropleth	Geospatial	California $230M
+11	Top States Rev + Orders	Dual bars	Bivariate	CA > 2x bang thứ 2
+12	Profit Margin by Channel	Bar chart	Bivariate	Export 37.93% cao nhất
+13	Top/Bottom Customers	Side bars	Comparative	Aibox Co. $12.5M
+14	Customer Segmentation	Bubble chart	Multivariate	3–4 cụm khách hàng
+15	Correlation Heatmap	Heatmap	Multivariate	Profit–Revenue: 0.87
+3.7. Giai đoạn 7: Export dữ liệu
+Sau khi EDA hoàn tất, DataFrame được xuất ra CSV (Cell 75): df.to_csv('Sales_data(EDA Exported).csv', index=False). File CSV này chứa 21 cột (15 cột gốc + 6 cột tạo mới) và là data source cho Power BI.
+3.8. Giai đoạn 8: Dashboard Power BI
+Dashboard được xây dựng theo quy trình: Sketching → Tạo background trên Canva → Import vào Power BI → Load CSV → Tạo DAX Measures → Dựng visuals → Cấu hình navigation, filters, bookmarks.
+Trang 1 – Executive Overview: 5 KPI cards (Total Revenue $1.24B, Total Profit, Profit Margin 37%, Total Orders, Revenue Per Order $19K) + 2 line charts (Monthly Revenue, Monthly Profit) + Histogram (Order Value Spectrum) + Scatter (Unit Price vs Margin)
+Trang 2 – Product & Channel: Bar charts (Product Revenue, Product Margin) + Channel analysis + Text insights
+Trang 3 – Geographic & Customer: Top/Bottom 5 Customers, Top/Bottom 5 States, Revenue by Region, Map visual
+DAX Measures đã tạo (trong bảng Custom Measures):
+Profit Margin % = DIVIDE(SUM(profit), SUM(revenue), 0) * 100
+Revenue Per Order = DIVIDE(SUM(revenue), COUNT(order_number))
+Tính năng đặc biệt: Page Navigation (buttons chuyển trang), Filter Panel (ẩn/hiện bằng Ctrl+Click), Bookmarks (Top 5 / Bottom 5 toggle), Clear All Slicers button.
+ 
+4. Hướng dẫn Setup và Chạy Dự án
+4.1. Yêu cầu phần mềm
+•	Python 3.8+ với các thư viện: pandas, numpy, matplotlib, seaborn, plotly
+•	Google Colab (miễn phí) hoặc Jupyter Notebook
+•	Microsoft Power BI Desktop (miễn phí, chỉ hỗ trợ Windows)
+•	Canva (miễn phí) để tạo background images cho dashboard
+4.2. Các bước thực hiện chi tiết
+Bước 1: Chuẩn bị dữ liệu
+Tải file Regional_Sales_Dataset.xlsx. Nếu dùng Google Colab, upload lên Google Drive. Nếu dùng Jupyter Notebook local, đặt file vào thư mục làm việc.
+Bước 2: Mở và chạy Notebook EDA
+Mở file EDA_Regional_Sales_Analysis.ipynb trong Google Colab hoặc Jupyter. Sửa đường dẫn file_path trong Cell 10 cho đúng vị trí file Excel của bạn. Chạy tất cả các cell từ đầu đến cuối theo thứ tự.
+# Sửa đường dẫn này trong Cell 10:
+file_path = '/path/to/your/Regional_Sales_Dataset.xlsx'
+
+# Nếu không dùng Google Colab, bỏ 2 dòng này:
+# from google.colab import drive
+# drive.mount('/content/drive')
+Bước 3: Kiểm tra kết quả EDA
+Sau khi chạy xong, kiểm tra: (a) DataFrame cuối cùng có 21 cột và 64,104 records, (b) tất cả 15 biểu đồ hiển thị đúng, (c) file CSV được xuất thành công ở Cell 75.
+Bước 4: Tạo background trên Canva
+Mở Canva, tạo canvas có kích thước phù hợp (16:9). Thiết kế layout với: boxes cho KPI cards, vùng chứa biểu đồ, navigation buttons, filter icons. Export từng trang làm PNG.
+Bước 5: Xây dựng Dashboard Power BI
+Mở Power BI Desktop. Import file CSV (Home → Get Data → Text/CSV). Thêm background image (Format → Canvas Background). Tạo bảng Custom Measures và viết DAX measures. Dựng các visuals (Card, Line Chart, Bar Chart, Pie Chart, Map). Cấu hình Page Navigation, Filter Panel với Bookmarks.
+Bước 6: Kiểm tra và tinh chỉnh
+Dùng Sort by Column để sắp xếp tháng đúng thứ tự (order_month_name sort by order_month_num). Kiểm tra tất cả navigation buttons, slicers, và bookmarks hoạt động đúng.
+Bước 7 (Tùy chọn): Publish lên Power BI Service
+Nếu có Power BI Pro: Publish → chọn Workspace → truy cập app.powerbi.com để xem online. Cấu hình Scheduled Refresh và Row-Level Security nếu cần.
+ 
+5. Tính năng chính và Sản phẩm đạt được
+5.1. Phân tích EDA toàn diện
+15 loại phân tích bao trùm: temporal (xu hướng thời gian), univariate (phân bố một biến), bivariate (quan hệ hai biến), multivariate (tương quan đa biến, phân khúc), và geospatial (bản đồ). Mỗi phân tích đi kèm insight cụ thể và recommendation.
+5.2. Data Pipeline tự động
+Notebook thực hiện pipeline tự động: đọc 6 sheet → merge thành 1 bảng → cleaning → feature engineering → xuất CSV. Chỉ cần thay đổi đường dẫn file đầu vào là có thể chạy lại toàn bộ.
+5.3. Dashboard Power BI tương tác
+3 trang dashboard với navigation, filter panel ẩn/hiện, bookmarks toggle (Top/Bottom 5), clear filter, và 5 KPI cards. Background được thiết kế trên Canva để đảm bảo tính thẩm mỹ chuyên nghiệp.
+5.4. Key Insights rút ra
+•	Doanh thu ổn định $23–26M/tháng, May là tháng cao nhất khi gộp tất cả năm
+•	Wholesale chiếm 54% doanh số, nhưng Export có profit margin cao nhất (37.93%)
+•	California dẫn đầu vượt trội với ~$230M (gấp đôi bang thứ 2)
+•	West Region chiếm ~35% tổng doanh thu, Northeast còn nhiều dư địa tăng trưởng
+•	Profit và Revenue tương quan rất mạnh (0.87), Quantity không ảnh hưởng đáng kể
+•	Khách hàng >$10M vẫn duy trì margin 36–40% – quy mô không làm giảm lợi nhuận
+5.5. Recommendations
+8.	Tăng cường kênh Export (margin cao nhất, hiện chỉ chiếm 15%)
+9.	Tập trung tăng trưởng ở Northeast (hiện thấp nhất ~20% tổng doanh thu)
+10.	Loại bỏ outliers khi tính trung bình để có số liệu chính xác hơn
+11.	Điều chỉnh ngân sách marketing theo mùa (tăng quanh May–June, giảm January)
+12.	Giữ chân và upsell top 10 khách hàng, phát triển nhóm bottom
+ 
+6. Phân tích chi tiết Code Notebook
+6.1. Import & Load (Cells 8–10)
+# Import thư viện xử lý dữ liệu và trực quan hóa
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Đọc tất cả sheet từ Excel (sheet_name=None → trả về dict)
+sheets = pd.read_excel(file_path, sheet_name=None)
+
+# Gán từng sheet vào DataFrame riêng
+df_sales     = sheets['Sales Orders']    # 64,104 records
+df_customers = sheets['Customers']        # 175 records
+df_products  = sheets['Products']         # 30 records
+Mục đích: Tải toàn bộ dữ liệu từ file Excel nhiều sheet vào các DataFrame độc lập để xử lý.
+6.2. Merge Pipeline (Cell 19)
+# Merge 5 lần liên tiếp để tạo DataFrame hoàn chỉnh
+df = df_sales.merge(df_customers, how='left',
+    left_on='Customer Name Index',
+    right_on='Customer Index')
+df = df.merge(df_products, how='left',
+    left_on='Product Description Index', right_on='Index')
+df = df.merge(df_regions, how='left',
+    left_on='Delivery Region Index', right_on='id')
+df = df.merge(df_state_reg[['State Code','Region']],
+    how='left', left_on='state_code', right_on='State Code')
+df = df.merge(df_budgets, how='left', on='Product Name')
+Mục đích: Tạo một DataFrame duy nhất chứa đầy đủ thông tin từ 6 bảng. Luôn dùng left join để giữ toàn bộ records từ fact table (Sales Orders).
+6.3. Feature Engineering (Cell 26)
+# Tạo cột tổng chi phí, lợi nhuận, tỷ lệ lợi nhuận
+df['total_cost'] = df['quantity'] * df['cost']
+df['profit'] = df['revenue'] - df['total_cost']
+df['profit_margin_pct'] = (df['profit']/df['revenue'])*100
+
+# Trích xuất thông tin tháng cho biểu đồ và Power BI
+df['order_month_name'] = df['order_date'].dt.month_name()
+df['order_month_num'] = df['order_date'].dt.month
+Mục đích: Biến dữ liệu thô thành thông tin phân tích được. Cặp order_month_name + order_month_num rất quan trọng cho Power BI (dùng Sort by Column).
+6.4. Xử lý dữ liệu 2018 (Cell 32)
+# Loại bỏ 2018 (chỉ có tháng 1-2, làm lệch phân tích)
+df_ = df[df['order_date'].dt.year != 2018]
+Mục đích: Dữ liệu 2018 không đầy đủ (chỉ 2 tháng) sẽ làm sai lệch phân tích temporal khi gộp tất cả các năm. Đây là bài học quan trọng về incomplete data.
+6.5. Export CSV (Cell 75)
+# Xuất DataFrame đã xử lý để dùng trong Power BI
+df.to_csv('Sales_data(EDA Exported).csv', index=False)
+Mục đích: Tạo cầu nối giữa Python (EDA) và Power BI (dashboard). File CSV này chính là data source cho toàn bộ dashboard.
+ 
+7. Kết luận
+Dự án USA Regional Sales Analysis thể hiện đầy đủ quy trình Data Analytics end-to-end: từ hiểu bài toán kinh doanh, phân tích cấu trúc dữ liệu (ERD), làm sạch và merge 6 bảng dữ liệu, tạo features mới, thực hiện 15 phân tích EDA chuyên sâu, đến xây dựng dashboard Power BI 3 trang với các tính năng tương tác.
+Các kỹ năng được thể hiện: Python (pandas, matplotlib, seaborn, plotly), EDA (univariate, bivariate, multivariate, geospatial), Feature Engineering, Data Modeling (ERD, PK/FK, fact/dimension tables), Power BI (DAX, Page Navigation, Bookmarks, Slicers, Canvas Background), và tư duy phân tích kinh doanh.
+Đây là một portfolio project hoàn chỉnh, có thể trình bày trong CV và phỏng vấn để thể hiện khả năng làm việc end-to-end với dữ liệu. Sinh viên được khuyến khích nâng cấp thêm: bổ sung SQL layer, thêm trang Home với navigation đẹp, implement drill-through và tooltips, hoặc kết nối dữ liệu từ database thay vì file CSV.

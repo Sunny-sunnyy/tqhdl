@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# uv / virtualenv
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Environment variables — KHÔNG commit API key
+.env
+.env.local
+
+# Jupyter
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# OS
+Thumbs.db
+
+# Gradio
+flagged/
+gradio_cached_examples/
+
+# PyGWalker cache
+.pygwalker_cache/
+
+# Logs
+*.log
