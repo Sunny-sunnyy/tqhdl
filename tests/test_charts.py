@@ -1,13 +1,18 @@
-"""Smoke tests for Tab 1 chart builders."""
+"""Smoke tests for chart builders (Tab 1 + Tab 2)."""
 
 import plotly.graph_objects as go
 
 from charts import (
     build_aov_histogram,
+    build_channel_pie,
     build_kpi_cards_html,
+    build_margin_by_channel,
     build_monthly_profit,
     build_monthly_revenue,
+    build_price_boxplot,
     build_price_margin_scatter,
+    build_top_products_profit,
+    build_top_products_revenue,
 )
 
 
@@ -42,3 +47,25 @@ def test_aov_histogram(df_full):
 def test_price_margin_scatter(df_full):
     fig = build_price_margin_scatter(df_full)
     assert isinstance(fig, go.Figure)
+
+
+# --- Tab 2 ---
+
+def test_top_products_revenue(df_full):
+    assert isinstance(build_top_products_revenue(df_full), go.Figure)
+
+
+def test_top_products_profit(df_full):
+    assert isinstance(build_top_products_profit(df_full), go.Figure)
+
+
+def test_channel_pie(df_full):
+    assert isinstance(build_channel_pie(df_full), go.Figure)
+
+
+def test_margin_by_channel(df_full):
+    assert isinstance(build_margin_by_channel(df_full), go.Figure)
+
+
+def test_price_boxplot(df_full):
+    assert isinstance(build_price_boxplot(df_full), go.Figure)

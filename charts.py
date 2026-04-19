@@ -112,6 +112,69 @@ def build_aov_histogram(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
+def build_top_products_revenue(df: pd.DataFrame, n: int = 10) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    top = df.groupby("product_name", as_index=False)["revenue"].sum().nlargest(n, "revenue")
+    fig = px.bar(top, x="revenue", y="product_name", orientation="h", title=f"Top {n} Products by Revenue")
+    fig.update_traces(marker_color=ACCENT)
+    fig.update_yaxes(categoryorder="total ascending", title_text="")
+    fig.update_xaxes(title_text="Revenue (USD)")
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
+
+
+def build_top_products_profit(df: pd.DataFrame, n: int = 10) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    top = df.groupby("product_name", as_index=False)["profit"].mean().nlargest(n, "profit")
+    fig = px.bar(top, x="profit", y="product_name", orientation="h", title=f"Top {n} Products by Avg Profit")
+    fig.update_traces(marker_color="#2e7d32")
+    fig.update_yaxes(categoryorder="total ascending", title_text="")
+    fig.update_xaxes(title_text="Avg Profit (USD)")
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
+
+
+def build_channel_pie(df: pd.DataFrame) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    by_ch = df.groupby("channel", as_index=False)["revenue"].sum()
+    fig = px.pie(
+        by_ch, names="channel", values="revenue", hole=0.4,
+        title="Revenue Share by Channel",
+        color_discrete_sequence=[ACCENT, ACCENT_SOFT, "#2e7d32"],
+    )
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
+
+
+def build_margin_by_channel(df: pd.DataFrame) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    by_ch = (
+        df.groupby("channel", as_index=False)["profit_margin_pct"]
+        .mean()
+        .sort_values("profit_margin_pct", ascending=False)
+    )
+    fig = px.bar(by_ch, x="channel", y="profit_margin_pct", title="Avg Profit Margin % by Channel", text="profit_margin_pct")
+    fig.update_traces(marker_color=ACCENT, texttemplate="%{text:.1f}%", textposition="outside")
+    fig.update_yaxes(title_text="Margin %")
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
+
+
+def build_price_boxplot(df: pd.DataFrame) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    fig = px.box(df, x="product_name", y="unit_price", title="Unit Price Distribution per Product")
+    fig.update_traces(marker_color=ACCENT)
+    fig.update_xaxes(title_text="", tickangle=-45)
+    fig.update_yaxes(title_text="Unit Price (USD)")
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
+
+
 def build_price_margin_scatter(df: pd.DataFrame) -> go.Figure:
     if df.empty:
         return _empty_figure()
