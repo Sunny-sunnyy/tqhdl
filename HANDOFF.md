@@ -2,7 +2,7 @@
 
 **Dự án**: Gradio Interactive Dashboard thay thế Power BI cho USA Regional Sales Analysis 2014–2018.
 **Bối cảnh**: Đồ án kết thúc môn "Trực quan hoá dữ liệu".
-**Last updated**: 2026-04-19 (session 2)
+**Last updated**: 2026-04-19 (session 3)
 
 ---
 
@@ -21,7 +21,8 @@
 | Phase 5 — LLM integration | done (Task 19-20: summarize_for_llm, llm_recommendation, wire 3 LLM buttons) |
 | Phase 6 — Tab 4 Explorer | done (Task 22-23: PyGWalker to_html verified OK, wired on tab select) |
 | Phase 7 — Polish & docs | done (Task 24-26: CSS polish, README final, HANDOFF updated) |
-| Phase 8 — (stretch) Upload CSV | — (defer post-defense) |
+| Phase 8 — UI Bug Fix & Design Overhaul | — next (4 bug + full redesign) |
+| Phase 9 — (stretch) Upload CSV | — (defer post-defense) |
 
 ## Mục tiêu
 
@@ -127,18 +128,80 @@ Global Filter Bar → gr.State(df_filtered)
 
 ## Next task chi tiết (để session mới bắt đầu ngay)
 
-**TẤT CẢ PHASE 1-7 ĐÃ HOÀN TẤT.**
+**Phase 8 — UI Bug Fix & Design Overhaul**
 
-App sẵn sàng demo: `uv run python app.py`
-- 4 tab đầy đủ nội dung và filter reactive
-- 37 pytest passed, 1 skipped (LLM test cần API key)
-- PyGWalker Explorer hoạt động (to_html + gr.HTML)
-- LLM button 3 tab (graceful khi không có key)
+Phát hiện sau khi chạy app thật. Thực hiện theo thứ tự ưu tiên:
 
-Việc còn lại (tùy chọn):
-- Phase 8 (stretch): Upload CSV generic — defer post-defense
-- Screenshot cho README nếu muốn
-- HF Spaces deploy nếu cần portfolio
+### Bug CRITICAL (fix trước)
+
+**Bug 1 — Chữ vô hình trong insight & LLM panel** (`theme.py`)
+- Triệu chứng: text trong `.insight-panel` và `.llm-output` màu trắng trên nền sáng → không đọc được (bôi chuột mới thấy)
+- Root cause: Gradio dark theme set `color: white` toàn cục, CSS của ta không override lại
+- Fix: thêm `color: #1a1a1a !important` vào `.insight-panel *` và `.llm-output *`
+
+**Bug 2 — Product dropdown sort sai thứ tự** (`app.py`)
+- Triệu chứng: "Product 1" → "Product 10" → "Product 11" → ... → "Product 2" (lexicographic)
+- Fix: đổi sort key thành numeric
+```python
+sorted(product_choices, key=lambda x: int(x.split()[-1]) if x.split()[-1].isdigit() else x)
+```
+
+### Chart improvements
+
+**Bug 3 — Histogram "Order Value Distribution" bars sát nhau** (`charts.py::build_aov_histogram`)
+- Fix: thêm `bargap=0.08` vào `fig.update_layout()`
+
+**Bug 4 — Thay scatter "Profit Margin % vs Unit Price"** (`charts.py`, `app.py`, `tests/test_charts.py`)
+- Vấn đề: unit_price là giá trị rời rạc (30 SKU × giá cố định) → scatter tạo dải dọc, vô nghĩa
+- Thay bằng: **"Revenue & Profit by Channel"** — grouped bar chart
+  - X: channel (Wholesale / Distributor / Export)
+  - 2 bar groups: Revenue (màu accent) vs Profit (màu xanh lá)
+  - Tên function mới: `build_revenue_profit_by_channel(df)`
+- Cập nhật `render_tab1` và `tab1_outputs` trong `app.py` tương ứng
+
+### Design Overhaul (sau khi fix bug)
+
+**Mục tiêu**: Modern analytics look, tham khảo Grafana / Linear / Retool
+
+**Palette mới** (cập nhật `theme.py::COLORS`):
+```python
+COLORS = {
+    "header_bg":   "#0f1117",   # near-black header
+    "page_bg":     "#f1f5f9",   # slate-100
+    "card_bg":     "#ffffff",
+    "accent":      "#4f8ef7",   # blue (trust, data)
+    "accent_alt":  "#22c55e",   # green (profit/positive)
+    "warning":     "#f59e0b",   # amber
+    "danger":      "#ef4444",   # red
+    "text_primary":"#0f172a",   # slate-900
+    "text_muted":  "#64748b",   # slate-500
+    "border":      "#e2e8f0",   # slate-200
+}
+```
+
+**Chart color sequence** (colorblind-safe, thay `ACCENT` cứng trong `charts.py`):
+```python
+PALETTE = ["#4f8ef7","#22c55e","#f59e0b","#a78bfa","#fb923c","#34d399"]
+```
+
+**CSS overhaul** (`theme.py::CUSTOM_CSS`) — các điểm chính:
+- Page bg: `#f1f5f9` (sáng hơn, ít nhàm hơn `#f6f6f6`)
+- Header: `#0f1117` (đậm hơn, chuyên nghiệp hơn `#3c3c40`)
+- KPI card: shadow layered `0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06)`
+- KPI value: `font-size: 32px` (to hơn, dễ đọc)
+- Insight panel: nền `#eff6ff` (xanh nhạt) + border `#2563eb` (xanh đậm) + `color: #0f172a !important`
+- LLM output: nền `#fefce8` (vàng nhạt) + border `#d97706` + `color: #0f172a !important`
+- Chart container: `border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.06)`
+- Tab selected: dùng accent blue `#4f8ef7` thay vì `#6b4eff`
+- Filter bar: subtle `border: 1px solid #e2e8f0`
+
+**Thứ tự thực hiện trong session**:
+1. Fix Bug 1 (chữ vô hình) → verify → commit
+2. Fix Bug 2 (product sort) → verify → commit
+3. Fix Bug 3 (histogram bargap) → verify → commit
+4. Thay Bug 4 (scatter → grouped bar) → TDD → verify → commit
+5. Design overhaul toàn bộ `theme.py` + `charts.py` palette → verify → commit
+6. Cập nhật HANDOFF.md + prompt session tiếp theo
 
 ## Commands verify trạng thái (chạy đầu session mới)
 
@@ -172,41 +235,51 @@ dữ liệu"). Repo: /home/hieu0606sunny/tqhdl/Regional Sales Summary
 
 ## Bối cảnh nhanh
 
-App Gradio đã hoàn tất Phase 1–7. Tất cả phase chính đã xong:
-- 4 tab (Overview / Product & Channel / Geo & Customer / Explorer PyGWalker)
-- 16 Plotly chart builders, 3 rule-based insights, 3 LLM button (OpenAI gpt-4o-mini)
-- 37 pytest pass (1 skipped — LLM test cần OPENAI_API_KEY)
-- App chạy: `uv run python app.py` → localhost:7860
+App Gradio đã hoàn tất Phase 1–7 (4 tab, 16 chart, 3 LLM button, PyGWalker).
+38 pytest pass. App chạy: `uv run python app.py` → localhost:7860.
+
+Hiện tại cần thực hiện **Phase 8 — UI Bug Fix & Design Overhaul** gồm 4 bug +
+full redesign palette/CSS. Chi tiết đầy đủ trong mục "Next task chi tiết"
+của HANDOFF.md — ĐỌC KỸ trước khi viết bất cứ dòng code nào.
 
 ## Bước 1 — Đọc theo thứ tự (KHÔNG đọc file khác trước):
 
 1. /home/hieu0606sunny/tqhdl/Regional Sales Summary/CLAUDE.md
 2. /home/hieu0606sunny/.claude/CLAUDE.md
 3. /home/hieu0606sunny/tqhdl/Regional Sales Summary/HANDOFF.md
+   → Đọc kỹ mục "Phase 8" trong "Next task chi tiết"
 
-(Chỉ đọc spec/plan nếu cần context sâu hơn về thiết kế.)
+## Bước 2 — Đọc code hiện có TRƯỚC KHI thêm bất cứ thứ gì:
 
-## Bước 2 — Verify baseline:
+```
+theme.py      — COLORS dict + CUSTOM_CSS (sẽ thay toàn bộ)
+charts.py     — chart builders (sẽ sửa 2 hàm + đổi palette)
+app.py        — filter bar + tab wiring (sửa product sort + thay 1 output)
+```
 
-Chạy các lệnh trong mục "Commands verify trạng thái" của HANDOFF.md.
-Kỳ vọng: 37 pytest pass, app mở OK.
-Nếu fail → debug theo Debugging Protocol trong global CLAUDE.md.
+ĐỪNG đọc lại: data.py, insights.py, tests/ (không thay đổi ở Phase 8,
+trừ test_charts.py phải cập nhật khi đổi tên hàm scatter → grouped bar).
 
-## Bước 3 — Đọc code hiện có trước khi thêm bất cứ thứ gì:
+## Bước 3 — Verify baseline:
 
-Files đã tồn tại — ĐỪNG viết lại:
-app.py, data.py, charts.py, insights.py, theme.py,
-tests/conftest.py, tests/test_data.py, tests/test_kpis.py,
-tests/test_charts.py, tests/test_insights.py
+```bash
+cd "/home/hieu0606sunny/tqhdl/Regional Sales Summary"
+uv run pytest -v          # kỳ vọng: 38 passed
+uv run python -c "from app import build_app; build_app(); print('OK')"
+```
 
-## Bước 4 — Báo cáo + hỏi:
+Nếu fail → debug trước theo Debugging Protocol.
 
-- Tóm tắt: Phase 1–7 hoàn tất. App sẵn sàng demo.
-- Việc còn lại tùy chọn:
-  a) Manual smoke test toàn bộ app trên browser (chụp screenshot cho README)
-  b) Phase 8 stretch: upload CSV generic (cần schema validator)
-  c) Bug fix / polish nếu phát hiện vấn đề khi chạy thử
-- Hỏi tôi muốn làm gì tiếp theo.
+## Bước 4 — Thực hiện Phase 8 theo đúng thứ tự:
+
+1. Bug 1: chữ vô hình (theme.py — 2 dòng CSS)
+2. Bug 2: product sort numeric (app.py — 1 dòng)
+3. Bug 3: histogram bargap (charts.py — 1 dòng)
+4. Bug 4: thay scatter → build_revenue_profit_by_channel (TDD)
+5. Design overhaul: palette mới + CSS hoàn toàn mới (theme.py + charts.py)
+
+Mỗi bước: sửa → pytest → `build_app()` OK → commit → bước tiếp.
+Hỏi tôi muốn **Inline Execution** hay **Subagent-Driven** trước khi bắt đầu.
 
 ## Ràng buộc bắt buộc:
 
@@ -214,11 +287,11 @@ tests/test_charts.py, tests/test_insights.py
 - Không emoji trong code / comment / print / log.
 - Gradio 6.x: `theme` và `css` vào `.launch()`, KHÔNG vào `gr.Blocks()`.
 - Product filter: sentinel "All Products" trong `_resolve_product_filter` (app.py).
-- Incremental: mỗi task xong → dừng → confirm → commit → task tiếp.
-- TDD cho mọi function mới: test fail trước, implement sau.
+- TDD cho hàm mới `build_revenue_profit_by_channel`: test fail → implement → pass.
+- Incremental: mỗi bug xong → confirm → commit → tiếp.
 - Giao tiếp: tiếng Việt. Code/comment: English.
 
-Sau khi đọc xong + verify baseline, bắt đầu Bước 4.
+Sau khi đọc xong + verify baseline, báo cáo ngắn rồi hỏi execution mode.
 ````
 
 ## Changelog
@@ -230,4 +303,5 @@ Sau khi đọc xong + verify baseline, bắt đầu Bước 4.
 | 2026-04-19 | UX | Product dropdown thêm sentinel "All Products" + Clear Filters reset về all-selected thay vì empty. Logic trong `app.py::_resolve_product_filter`. |
 | 2026-04-19 | Docs | Mở rộng HANDOFF: file inventory chi tiết, Gradio 6.x pitfalls, next-task chi tiết, verify-baseline commands, resume prompt mới model-agnostic. |
 | 2026-04-19 | Phase 2-4 | Hoàn tất: compute_kpis, 16 chart builders (Tab 1-3), 3 rule insights, wire 3 tab vào app.py (filter chain + radio toggles). 35 tests green. |
-| 2026-04-19 | Phase 5-7 | Hoàn tất: summarize_for_llm + llm_recommendation, 3 LLM buttons, PyGWalker Explorer, CSS polish, README final. 37 tests green. App sẵn sàng demo. |
+| 2026-04-19 | Phase 5-7 | Hoàn tất: summarize_for_llm + llm_recommendation, 3 LLM buttons, PyGWalker Explorer, CSS polish, README final. 38 tests green. App sẵn sàng demo. |
+| 2026-04-19 | Phase 8 plan | Phát hiện 4 bug khi chạy thật: chữ vô hình insight/LLM, product sort sai, histogram bargap, scatter vô nghĩa. Lên plan design overhaul (palette mới, CSS mới theo Grafana/Linear style). Ghi vào HANDOFF next task. |
