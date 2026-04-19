@@ -170,43 +170,53 @@ Tôi tiếp tục dự án **Regional Sales Gradio Dashboard** (đồ án "Trự
 dữ liệu"). Repo: /home/hieu0606sunny/tqhdl/Regional Sales Summary
 (GitHub: https://github.com/Sunny-sunnyy/tqhdl branch main).
 
+## Bối cảnh nhanh
+
+App Gradio đã hoàn tất Phase 1–7. Tất cả phase chính đã xong:
+- 4 tab (Overview / Product & Channel / Geo & Customer / Explorer PyGWalker)
+- 16 Plotly chart builders, 3 rule-based insights, 3 LLM button (OpenAI gpt-4o-mini)
+- 37 pytest pass (1 skipped — LLM test cần OPENAI_API_KEY)
+- App chạy: `uv run python app.py` → localhost:7860
+
 ## Bước 1 — Đọc theo thứ tự (KHÔNG đọc file khác trước):
 
-1. /home/hieu0606sunny/tqhdl/Regional Sales Summary/CLAUDE.md        (project guide + Gradio section)
-2. /home/hieu0606sunny/.claude/CLAUDE.md                             (global rules)
-3. /home/hieu0606sunny/tqhdl/Regional Sales Summary/HANDOFF.md       (trạng thái + pitfalls + next task)
-4. /home/hieu0606sunny/tqhdl/Regional Sales Summary/docs/superpowers/specs/2026-04-18-regional-sales-gradio-design.md
-5. /home/hieu0606sunny/tqhdl/Regional Sales Summary/docs/superpowers/plans/2026-04-18-regional-sales-gradio-implementation.md
+1. /home/hieu0606sunny/tqhdl/Regional Sales Summary/CLAUDE.md
+2. /home/hieu0606sunny/.claude/CLAUDE.md
+3. /home/hieu0606sunny/tqhdl/Regional Sales Summary/HANDOFF.md
+
+(Chỉ đọc spec/plan nếu cần context sâu hơn về thiết kế.)
 
 ## Bước 2 — Verify baseline:
 
-Chạy 4 lệnh trong mục "Commands verify trạng thái" của HANDOFF.md.
-Nếu 9 pytest pass + app skeleton chạy được → OK sang Bước 3.
-Nếu fail → debug trước, theo Debugging Protocol của global CLAUDE.md.
+Chạy các lệnh trong mục "Commands verify trạng thái" của HANDOFF.md.
+Kỳ vọng: 37 pytest pass, app mở OK.
+Nếu fail → debug theo Debugging Protocol trong global CLAUDE.md.
 
-## Bước 3 — Đọc code đã có trước khi viết:
+## Bước 3 — Đọc code hiện có trước khi thêm bất cứ thứ gì:
 
-ĐÃ TỒN TẠI (đọc hết trước khi thêm code): app.py, data.py, theme.py,
-tests/conftest.py, tests/test_data.py. ĐỪNG viết lại những file này.
+Files đã tồn tại — ĐỪNG viết lại:
+app.py, data.py, charts.py, insights.py, theme.py,
+tests/conftest.py, tests/test_data.py, tests/test_kpis.py,
+tests/test_charts.py, tests/test_insights.py
 
-## Bước 4 — Báo cáo và hỏi:
+## Bước 4 — Báo cáo + hỏi:
 
-Nói ngắn gọn:
-- Phase 1 đã xong (theo HANDOFF.md).
-- Next task: Phase 2 Task 6 (compute_kpis TDD).
-- Hỏi tôi muốn **Subagent-Driven** (dispatch subagent/task) hay
-  **Inline Execution** (chạy tuần tự).
+- Tóm tắt: Phase 1–7 hoàn tất. App sẵn sàng demo.
+- Việc còn lại tùy chọn:
+  a) Manual smoke test toàn bộ app trên browser (chụp screenshot cho README)
+  b) Phase 8 stretch: upload CSV generic (cần schema validator)
+  c) Bug fix / polish nếu phát hiện vấn đề khi chạy thử
+- Hỏi tôi muốn làm gì tiếp theo.
 
 ## Ràng buộc bắt buộc:
 
 - Dùng `uv` (không pip, không python3). `uv run xxx` / `uv add xxx`.
 - Không emoji trong code / comment / print / log.
-- Gradio 6.x API: `theme` và `css` truyền vào `.launch()`, KHÔNG vào `gr.Blocks()`.
-  Xem mục "Gradio 6.x API pitfalls" trong HANDOFF.md.
-- Product filter: có sentinel "All Products". Xem `_resolve_product_filter` trong app.py.
-- Incremental — mỗi task xong → dừng → chờ tôi confirm → commit → task tiếp.
-- Tuân thủ CLAUDE.md global rules: 3-Solution Rule, Debugging Protocol, TDD, Stop & Ask.
-- Giao tiếp: tiếng Việt. Code / comment: English.
+- Gradio 6.x: `theme` và `css` vào `.launch()`, KHÔNG vào `gr.Blocks()`.
+- Product filter: sentinel "All Products" trong `_resolve_product_filter` (app.py).
+- Incremental: mỗi task xong → dừng → confirm → commit → task tiếp.
+- TDD cho mọi function mới: test fail trước, implement sau.
+- Giao tiếp: tiếng Việt. Code/comment: English.
 
 Sau khi đọc xong + verify baseline, bắt đầu Bước 4.
 ````
