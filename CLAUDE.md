@@ -60,3 +60,38 @@ Logical phases by cell range:
 - **Rerun the pipeline**: edit `file_path` in Cell 10, run all cells, confirm Cell 75 writes the CSV, then refresh Power BI.
 - **Add a new feature column**: add it in Cell 26 (so it flows to the CSV), then add it as a field/measure in Power BI.
 - **Change cleaning logic**: changes in Cells 15–24 cascade through the merge (Cell 19) and all downstream EDA — rerun the whole notebook, don't run cells piecemeal.
+
+## Gradio Interactive Dashboard (Phase 1+, in progress)
+
+A Gradio web app is being built on top of the CSV output of the notebook — this is the *replacement* deliverable for Power BI (the course assignment requires an interactive app, not a static dashboard).
+
+**Authoritative planning docs — read in order before touching code:**
+
+1. `HANDOFF.md` — current status, next task, file inventory, Gradio-version pitfalls, resume prompt.
+2. `docs/superpowers/specs/2026-04-18-regional-sales-gradio-design.md` — design spec (architecture, UI layout, chart contract).
+3. `docs/superpowers/plans/2026-04-18-regional-sales-gradio-implementation.md` — task-by-task plan with ready-to-paste code blocks.
+
+**Runtime & discipline:**
+
+- Package manager is **`uv`**. Always `uv run xxx`, never `python3 xxx`. Always `uv add xxx`, never `pip install`.
+- **No emoji** in any code, print, logging, or commit message.
+- **TDD** for `data.py` helpers and `charts.py` builders: write failing test → implement → test pass → commit.
+- **Incremental**: one task from `plan.md` at a time, stop and ask for confirm before the commit, commit after confirm, then next task.
+
+**Gradio 6.x API note (critical, easy to miss):** `theme=` and `css=` moved from `gr.Blocks(...)` to `.launch(...)`. Only `title=` stays on `gr.Blocks`. Copying old snippets from `plan.md` verbatim will emit a `UserWarning` — update the call-sites accordingly.
+
+**Source-of-truth files:**
+
+- `data.py` — `load_csv()` + `apply_filters(df, filters_dict)`. Pure logic, no Gradio import.
+- `theme.py` — `COLORS` dict + `CUSTOM_CSS` string.
+- `app.py` — only file that imports Gradio. Builds Blocks, wires state & event handlers.
+- `charts.py`, `insights.py` — to be created in Phases 2–5, pure functions (no Gradio import).
+- Tests live in `tests/`, run with `uv run pytest`.
+
+**Conventions already wired:**
+
+- Filter semantics: empty list = no filter on that dimension (lives in `data.py::apply_filters`).
+- Product filter has a sentinel `"All Products"` option (lives in `app.py::_resolve_product_filter`) — selecting it disables the product filter. Default value = `["All Products"]`. Do not push this sentinel into `data.py`.
+- Gradio state: `df_full_state` (load once), `df_filtered_state` (recomputed on filter change), `filter_dict_state` (fed to rule templates + LLM prompt).
+
+**Testing cadence:** before commit, run `uv run pytest -v` and make sure every test is green. Before declaring a task done, run `uv run python -c "from app import build_app; build_app()"` to confirm the app still wires up.
