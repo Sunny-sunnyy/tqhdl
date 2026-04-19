@@ -80,3 +80,27 @@ def product_channel_insight(df: pd.DataFrame, filters: dict) -> str:
         f"- Kênh có margin cao nhất: **{best_margin_ch_name}** "
         f"(trung bình **{best_margin_val:.1f}%**).\n"
     )
+
+
+def geo_customer_insight(df: pd.DataFrame, filters: dict) -> str:
+    if df.empty:
+        return "> Không có dữ liệu."
+
+    region_rev = df.groupby("us_region")["revenue"].sum().sort_values(ascending=False)
+    top_region = region_rev.index[0]
+    top_region_pct = region_rev.iloc[0] / region_rev.sum() * 100
+
+    state_rev = df.groupby("state_name")["revenue"].sum().sort_values(ascending=False)
+    top_state = state_rev.index[0]
+
+    cust_rev = df.groupby("customer_name")["revenue"].sum().sort_values(ascending=False)
+    top_cust = cust_rev.index[0]
+    top_cust_val = cust_rev.iloc[0]
+
+    return (
+        f"### Key Findings — Geography & Customer\n\n"
+        f"*Scope: {_fmt_filters(filters)}*\n\n"
+        f"- Vùng dẫn đầu: **{top_region}** ({top_region_pct:.1f}% doanh thu).\n"
+        f"- Bang mạnh nhất: **{top_state}** ({_fmt_money(state_rev.iloc[0])}).\n"
+        f"- Khách hàng top-spender: **{top_cust}** ({_fmt_money(top_cust_val)}).\n"
+    )

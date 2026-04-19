@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from insights import overview_insight, product_channel_insight
+from insights import geo_customer_insight, overview_insight, product_channel_insight
 
 
 def test_overview_insight_returns_markdown_with_numbers(df_full):
@@ -28,3 +28,8 @@ def test_product_channel_insight(df_full):
     text = product_channel_insight(df_full, filters={})
     assert "Wholesale" in text or "Distributor" in text or "Export" in text
     assert "Product" in text
+
+
+def test_geo_customer_insight(df_full):
+    text = geo_customer_insight(df_full, filters={})
+    assert "California" in text or "CA" in text or "West" in text or "Midwest" in text
