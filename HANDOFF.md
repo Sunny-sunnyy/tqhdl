@@ -235,30 +235,31 @@ dữ liệu"). Repo: /home/hieu0606sunny/tqhdl/Regional Sales Summary
 
 ## Bối cảnh nhanh
 
-App Gradio đã hoàn tất Phase 1–7 (4 tab, 16 chart, 3 LLM button, PyGWalker).
-38 pytest pass. App chạy: `uv run python app.py` → localhost:7860.
+App Gradio đã hoàn tất Phase 1–8:
+- 4 tab (Overview / Product & Channel / Geography & Customer / Explorer)
+- 16 chart (Plotly), 3 LLM button, PyGWalker Explorer
+- Design overhaul: palette blue (#4f8ef7), CSS Grafana-style
+- 4 bug đã fix: chữ vô hình, product sort, histogram bargap, scatter → grouped bar
+- 38 pytest pass. App chạy: `uv run python app.py` → localhost:7860.
 
-Hiện tại cần thực hiện **Phase 8 — UI Bug Fix & Design Overhaul** gồm 4 bug +
-full redesign palette/CSS. Chi tiết đầy đủ trong mục "Next task chi tiết"
-của HANDOFF.md — ĐỌC KỸ trước khi viết bất cứ dòng code nào.
+Phase tiếp theo: **Phase 9 — stretch goals** (defer post-defense, bàn sau).
+Hiện tại: app đã sẵn sàng demo. Nếu phát hiện bug mới khi chạy thật thì báo cáo.
 
 ## Bước 1 — Đọc theo thứ tự (KHÔNG đọc file khác trước):
 
 1. /home/hieu0606sunny/tqhdl/Regional Sales Summary/CLAUDE.md
 2. /home/hieu0606sunny/.claude/CLAUDE.md
 3. /home/hieu0606sunny/tqhdl/Regional Sales Summary/HANDOFF.md
-   → Đọc kỹ mục "Phase 8" trong "Next task chi tiết"
 
 ## Bước 2 — Đọc code hiện có TRƯỚC KHI thêm bất cứ thứ gì:
 
 ```
-theme.py      — COLORS dict + CUSTOM_CSS (sẽ thay toàn bộ)
-charts.py     — chart builders (sẽ sửa 2 hàm + đổi palette)
-app.py        — filter bar + tab wiring (sửa product sort + thay 1 output)
+theme.py    — COLORS/PALETTE dict + CUSTOM_CSS (Grafana-style, xong)
+charts.py   — 17 builders (Tab 1-3 + build_revenue_profit_by_channel)
+app.py      — filter bar + 4 tab + state wiring (xong)
+data.py     — load_csv() + apply_filters() (không thay đổi)
+insights.py — rule-based + LLM (không thay đổi)
 ```
-
-ĐỪNG đọc lại: data.py, insights.py, tests/ (không thay đổi ở Phase 8,
-trừ test_charts.py phải cập nhật khi đổi tên hàm scatter → grouped bar).
 
 ## Bước 3 — Verify baseline:
 
@@ -270,28 +271,16 @@ uv run python -c "from app import build_app; build_app(); print('OK')"
 
 Nếu fail → debug trước theo Debugging Protocol.
 
-## Bước 4 — Thực hiện Phase 8 theo đúng thứ tự:
-
-1. Bug 1: chữ vô hình (theme.py — 2 dòng CSS)
-2. Bug 2: product sort numeric (app.py — 1 dòng)
-3. Bug 3: histogram bargap (charts.py — 1 dòng)
-4. Bug 4: thay scatter → build_revenue_profit_by_channel (TDD)
-5. Design overhaul: palette mới + CSS hoàn toàn mới (theme.py + charts.py)
-
-Mỗi bước: sửa → pytest → `build_app()` OK → commit → bước tiếp.
-Hỏi tôi muốn **Inline Execution** hay **Subagent-Driven** trước khi bắt đầu.
-
 ## Ràng buộc bắt buộc:
 
 - Dùng `uv` (không pip, không python3). `uv run xxx` / `uv add xxx`.
 - Không emoji trong code / comment / print / log.
 - Gradio 6.x: `theme` và `css` vào `.launch()`, KHÔNG vào `gr.Blocks()`.
 - Product filter: sentinel "All Products" trong `_resolve_product_filter` (app.py).
-- TDD cho hàm mới `build_revenue_profit_by_channel`: test fail → implement → pass.
-- Incremental: mỗi bug xong → confirm → commit → tiếp.
+- Incremental: mỗi thay đổi xong → pytest → build_app() → commit → tiếp.
 - Giao tiếp: tiếng Việt. Code/comment: English.
 
-Sau khi đọc xong + verify baseline, báo cáo ngắn rồi hỏi execution mode.
+Sau khi đọc xong + verify baseline, báo cáo ngắn trạng thái app.
 ````
 
 ## Changelog
