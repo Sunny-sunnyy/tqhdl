@@ -69,6 +69,14 @@ def clear_filters(
     )
 
 
+def render_explorer(df_filtered: pd.DataFrame) -> str:
+    try:
+        from pygwalker.api.html import to_html
+        return to_html(df_filtered, spec_io_mode="rw")
+    except Exception as e:
+        return f"<div style='padding:24px;color:#a33;'>PyGWalker error: {e}</div>"
+
+
 def render_tab3(df_filtered: pd.DataFrame, filters: dict, cust_mode: str) -> tuple:
     return (
         build_region_bar(df_filtered),
@@ -148,7 +156,7 @@ def build_app() -> gr.Blocks:
             )
             clear_btn = gr.Button("Clear Filters", variant="secondary", scale=0)
 
-        with gr.Tabs():
+        with gr.Tabs() as tabs:
             with gr.Tab("Overview"):
                 kpi_html = gr.HTML(build_kpi_cards_html(df_full))
                 with gr.Row():
@@ -201,8 +209,13 @@ def build_app() -> gr.Blocks:
                     )
                 tab3_llm_btn = gr.Button("Sinh Strategic Recommendation (AI)", variant="primary")
                 tab3_llm_output = gr.Markdown(elem_classes=["llm-output"])
-            with gr.Tab("Explorer"):
-                gr.Markdown("*(Tab 4 PyGWalker - will be added in Phase 6)*")
+            with gr.Tab("Explorer") as explorer_tab:
+                gr.Markdown(
+                    "### Data Explorer — PyGWalker\n"
+                    "Keo-tha dimension/measure de kham pha du lieu tu do. "
+                    "Dataset da duoc ap global filter truoc khi mo tab nay."
+                )
+                explorer_html = gr.HTML(label="Explorer")
 
         tab1_outputs = [
             kpi_html, monthly_rev_chart, monthly_profit_chart,
@@ -268,6 +281,12 @@ def build_app() -> gr.Blocks:
             fn=lambda df, f: llm_recommendation(df, f, "geo_customer"),
             inputs=[df_filtered_state, filter_dict_state],
             outputs=tab3_llm_output,
+        )
+
+        explorer_tab.select(
+            fn=render_explorer,
+            inputs=[df_filtered_state],
+            outputs=[explorer_html],
         )
 
     return app
