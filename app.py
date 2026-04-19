@@ -120,7 +120,10 @@ def build_app() -> gr.Blocks:
     year_choices = sorted(df_full["order_date"].dt.year.unique().tolist())
     channel_choices = sorted(df_full["channel"].unique().tolist())
     region_choices = sorted(df_full["us_region"].unique().tolist())
-    product_choices = sorted(df_full["product_name"].unique().tolist())
+    product_choices = sorted(
+        df_full["product_name"].unique().tolist(),
+        key=lambda x: int(x.split()[-1]) if x.split()[-1].isdigit() else x,
+    )
     product_dropdown_choices = [ALL_PRODUCTS_LABEL] + product_choices
 
     with gr.Blocks(title="USA Regional Sales Dashboard") as app:
