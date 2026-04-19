@@ -13,8 +13,8 @@ from charts import (
     build_monthly_profit,
     build_monthly_revenue,
     build_price_boxplot,
-    build_price_margin_scatter,
     build_region_bar,
+    build_revenue_profit_by_channel,
     build_state_choropleth,
     build_states_dual_bar,
     build_top_products_profit,
@@ -50,9 +50,10 @@ def test_aov_histogram(df_full):
     assert isinstance(fig, go.Figure)
 
 
-def test_price_margin_scatter(df_full):
-    fig = build_price_margin_scatter(df_full)
+def test_revenue_profit_by_channel(df_full):
+    fig = build_revenue_profit_by_channel(df_full)
     assert isinstance(fig, go.Figure)
+    assert len(fig.data) == 2  # two bar groups: revenue + profit
 
 
 # --- Tab 2 ---

@@ -16,7 +16,7 @@ from charts import (
     build_monthly_profit,
     build_monthly_revenue,
     build_price_boxplot,
-    build_price_margin_scatter,
+    build_revenue_profit_by_channel,
     build_region_bar,
     build_state_choropleth,
     build_states_dual_bar,
@@ -110,7 +110,7 @@ def render_tab1(
         build_monthly_revenue(df_filtered, rev_mode),
         build_monthly_profit(df_filtered),
         build_aov_histogram(df_filtered),
-        build_price_margin_scatter(df_filtered),
+        build_revenue_profit_by_channel(df_filtered),
         overview_insight(df_filtered, filters),
     )
 
@@ -174,7 +174,7 @@ def build_app() -> gr.Blocks:
                     monthly_profit_chart = gr.Plot(build_monthly_profit(df_full))
                 with gr.Row():
                     aov_chart = gr.Plot(build_aov_histogram(df_full))
-                    scatter_chart = gr.Plot(build_price_margin_scatter(df_full))
+                    rev_profit_ch_chart = gr.Plot(build_revenue_profit_by_channel(df_full))
                 tab1_insight = gr.Markdown(
                     overview_insight(df_full, {}), elem_classes=["insight-panel"]
                 )
@@ -222,7 +222,7 @@ def build_app() -> gr.Blocks:
 
         tab1_outputs = [
             kpi_html, monthly_rev_chart, monthly_profit_chart,
-            aov_chart, scatter_chart, tab1_insight,
+            aov_chart, rev_profit_ch_chart, tab1_insight,
         ]
         tab2_outputs = [
             tp_rev_chart, tp_profit_chart, ch_pie_chart,

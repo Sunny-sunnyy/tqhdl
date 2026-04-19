@@ -175,6 +175,33 @@ def build_price_boxplot(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
+def build_revenue_profit_by_channel(df: pd.DataFrame) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    by_ch = (
+        df.groupby("channel", as_index=False)
+        .agg(revenue=("revenue", "sum"), profit=("profit", "sum"))
+        .sort_values("revenue", ascending=False)
+    )
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=by_ch["channel"], y=by_ch["revenue"],
+        name="Revenue", marker_color=ACCENT,
+    ))
+    fig.add_trace(go.Bar(
+        x=by_ch["channel"], y=by_ch["profit"],
+        name="Profit", marker_color="#2e7d32",
+    ))
+    fig.update_layout(
+        title="Revenue & Profit by Channel",
+        barmode="group",
+        xaxis_title="Channel",
+        yaxis_title="Amount (USD)",
+        **PLOTLY_LAYOUT,
+    )
+    return fig
+
+
 def build_price_margin_scatter(df: pd.DataFrame) -> go.Figure:
     if df.empty:
         return _empty_figure()
