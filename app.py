@@ -5,7 +5,15 @@ from __future__ import annotations
 import gradio as gr
 import pandas as pd
 
+from charts import (
+    build_aov_histogram,
+    build_kpi_cards_html,
+    build_monthly_profit,
+    build_monthly_revenue,
+    build_price_margin_scatter,
+)
 from data import apply_filters, load_csv
+from insights import overview_insight
 from theme import CUSTOM_CSS
 
 ALL_PRODUCTS_LABEL = "All Products"
@@ -47,6 +55,21 @@ def clear_filters(
         channel_choices,
         region_choices,
         [ALL_PRODUCTS_LABEL],
+    )
+
+
+def render_tab1(
+    df_filtered: pd.DataFrame,
+    filters: dict,
+    rev_mode: str,
+) -> tuple:
+    return (
+        build_kpi_cards_html(df_filtered),
+        build_monthly_revenue(df_filtered, rev_mode),
+        build_monthly_profit(df_filtered),
+        build_aov_histogram(df_filtered),
+        build_price_margin_scatter(df_filtered),
+        overview_insight(df_filtered, filters),
     )
 
 
@@ -93,7 +116,23 @@ def build_app() -> gr.Blocks:
 
         with gr.Tabs():
             with gr.Tab("Overview"):
-                gr.Markdown("*(Tab 1 content - will be added in Phase 2)*")
+                kpi_html = gr.HTML(build_kpi_cards_html(df_full))
+                with gr.Row():
+                    monthly_rev_mode = gr.Radio(
+                        ["timeseries", "seasonal"],
+                        value="timeseries",
+                        label="Monthly Revenue view",
+                        scale=1,
+                    )
+                with gr.Row():
+                    monthly_rev_chart = gr.Plot(build_monthly_revenue(df_full, "timeseries"))
+                    monthly_profit_chart = gr.Plot(build_monthly_profit(df_full))
+                with gr.Row():
+                    aov_chart = gr.Plot(build_aov_histogram(df_full))
+                    scatter_chart = gr.Plot(build_price_margin_scatter(df_full))
+                tab1_insight = gr.Markdown(
+                    overview_insight(df_full, {}), elem_classes=["insight-panel"]
+                )
             with gr.Tab("Product & Channel"):
                 gr.Markdown("*(Tab 2 content - will be added in Phase 3)*")
             with gr.Tab("Geography & Customer"):
@@ -101,13 +140,28 @@ def build_app() -> gr.Blocks:
             with gr.Tab("Explorer"):
                 gr.Markdown("*(Tab 4 PyGWalker - will be added in Phase 6)*")
 
+        tab1_outputs = [
+            kpi_html, monthly_rev_chart, monthly_profit_chart,
+            aov_chart, scatter_chart, tab1_insight,
+        ]
+
         filter_inputs = [df_full_state, year_f, channel_f, region_f, product_f]
         for widget in [year_f, channel_f, region_f, product_f]:
             widget.change(
                 fn=build_filter_state,
                 inputs=filter_inputs,
                 outputs=[df_filtered_state, filter_dict_state],
+            ).then(
+                fn=render_tab1,
+                inputs=[df_filtered_state, filter_dict_state, monthly_rev_mode],
+                outputs=tab1_outputs,
             )
+
+        monthly_rev_mode.change(
+            fn=render_tab1,
+            inputs=[df_filtered_state, filter_dict_state, monthly_rev_mode],
+            outputs=tab1_outputs,
+        )
 
         clear_btn.click(
             fn=lambda: clear_filters(year_choices, channel_choices, region_choices),
