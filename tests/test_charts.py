@@ -1,16 +1,22 @@
-"""Smoke tests for chart builders (Tab 1 + Tab 2)."""
+"""Smoke tests for chart builders (Tab 1 + Tab 2 + Tab 3)."""
 
 import plotly.graph_objects as go
 
 from charts import (
     build_aov_histogram,
     build_channel_pie,
+    build_correlation_heatmap,
+    build_customer_bar,
+    build_customer_bubble,
     build_kpi_cards_html,
     build_margin_by_channel,
     build_monthly_profit,
     build_monthly_revenue,
     build_price_boxplot,
     build_price_margin_scatter,
+    build_region_bar,
+    build_state_choropleth,
+    build_states_dual_bar,
     build_top_products_profit,
     build_top_products_revenue,
 )
@@ -69,3 +75,33 @@ def test_margin_by_channel(df_full):
 
 def test_price_boxplot(df_full):
     assert isinstance(build_price_boxplot(df_full), go.Figure)
+
+
+# --- Tab 3 ---
+
+def test_region_bar(df_full):
+    assert isinstance(build_region_bar(df_full), go.Figure)
+
+
+def test_state_choropleth(df_full):
+    assert isinstance(build_state_choropleth(df_full), go.Figure)
+
+
+def test_states_dual_bar(df_full):
+    assert isinstance(build_states_dual_bar(df_full), go.Figure)
+
+
+def test_customer_bar_top(df_full):
+    assert isinstance(build_customer_bar(df_full, mode="top"), go.Figure)
+
+
+def test_customer_bar_bottom(df_full):
+    assert isinstance(build_customer_bar(df_full, mode="bottom"), go.Figure)
+
+
+def test_customer_bubble(df_full):
+    assert isinstance(build_customer_bubble(df_full), go.Figure)
+
+
+def test_correlation_heatmap(df_full):
+    assert isinstance(build_correlation_heatmap(df_full), go.Figure)

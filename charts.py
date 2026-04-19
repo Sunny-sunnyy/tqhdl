@@ -189,3 +189,120 @@ def build_price_margin_scatter(df: pd.DataFrame) -> go.Figure:
     fig.update_yaxes(title_text="Profit Margin %")
     fig.update_layout(**PLOTLY_LAYOUT)
     return fig
+
+
+def build_region_bar(df: pd.DataFrame) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    by_reg = (
+        df.groupby("us_region", as_index=False)["revenue"]
+        .sum()
+        .sort_values("revenue", ascending=True)
+    )
+    fig = px.bar(by_reg, x="revenue", y="us_region", orientation="h", title="Revenue by US Region")
+    fig.update_traces(marker_color=ACCENT)
+    fig.update_xaxes(title_text="Revenue (USD)")
+    fig.update_yaxes(title_text="")
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
+
+
+def build_state_choropleth(df: pd.DataFrame) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    by_state = df.groupby("state", as_index=False)["revenue"].sum()
+    fig = px.choropleth(
+        by_state, locations="state", locationmode="USA-states",
+        color="revenue", scope="usa",
+        color_continuous_scale="Purples",
+        title="Revenue by State",
+    )
+    fig.update_layout(**PLOTLY_LAYOUT, geo=dict(bgcolor="rgba(0,0,0,0)"))
+    return fig
+
+
+def build_states_dual_bar(df: pd.DataFrame, n: int = 10) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    by_state = (
+        df.groupby("state_name")
+        .agg(revenue=("revenue", "sum"), orders=("order_number", "nunique"))
+        .reset_index()
+        .nlargest(n, "revenue")
+        .sort_values("revenue")
+    )
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        y=by_state["state_name"], x=by_state["revenue"],
+        orientation="h", name="Revenue", marker_color=ACCENT,
+    ))
+    fig.add_trace(go.Bar(
+        y=by_state["state_name"], x=by_state["orders"],
+        orientation="h", name="Orders", marker_color=ACCENT_SOFT, xaxis="x2",
+    ))
+    fig.update_layout(
+        title=f"Top {n} States — Revenue + Orders",
+        xaxis=dict(title="Revenue (USD)", side="bottom"),
+        xaxis2=dict(title="Orders", overlaying="x", side="top"),
+        barmode="group",
+        **PLOTLY_LAYOUT,
+    )
+    return fig
+
+
+def build_customer_bar(df: pd.DataFrame, mode: str = "top", n: int = 10) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    grp = df.groupby("customer_name", as_index=False)["revenue"].sum()
+    if mode == "top":
+        selected = grp.nlargest(n, "revenue").sort_values("revenue")
+        title = f"Top {n} Customers by Revenue"
+        color = ACCENT
+    else:
+        selected = grp.nsmallest(n, "revenue").sort_values("revenue", ascending=False)
+        title = f"Bottom {n} Customers by Revenue"
+        color = "#ed6c02"
+    fig = px.bar(selected, x="revenue", y="customer_name", orientation="h", title=title)
+    fig.update_traces(marker_color=color)
+    fig.update_yaxes(title_text="")
+    fig.update_xaxes(title_text="Revenue (USD)")
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
+
+
+def build_customer_bubble(df: pd.DataFrame) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    seg = (
+        df.groupby("customer_name")
+        .agg(
+            total_revenue=("revenue", "sum"),
+            avg_margin=("profit_margin_pct", "mean"),
+            n_orders=("order_number", "nunique"),
+        )
+        .reset_index()
+    )
+    fig = px.scatter(
+        seg, x="total_revenue", y="avg_margin", size="n_orders",
+        hover_name="customer_name", size_max=40,
+        title="Customer Segmentation (Revenue x Margin x Orders)",
+    )
+    fig.update_traces(marker_color=ACCENT, marker_line=dict(color=HEADER, width=0.5))
+    fig.update_xaxes(title_text="Total Revenue (USD)")
+    fig.update_yaxes(title_text="Avg Profit Margin %")
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
+
+
+def build_correlation_heatmap(df: pd.DataFrame) -> go.Figure:
+    if df.empty:
+        return _empty_figure()
+    cols = ["quantity", "unit_price", "revenue", "cost", "profit"]
+    corr = df[cols].corr()
+    fig = px.imshow(
+        corr, text_auto=".2f", aspect="auto",
+        color_continuous_scale="RdBu_r", zmin=-1, zmax=1,
+        title="Correlation Heatmap",
+    )
+    fig.update_layout(**PLOTLY_LAYOUT)
+    return fig
