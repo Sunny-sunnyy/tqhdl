@@ -24,7 +24,7 @@ from charts import (
     build_top_products_revenue,
 )
 from data import apply_filters, load_csv
-from insights import geo_customer_insight, overview_insight, product_channel_insight
+from insights import geo_customer_insight, llm_recommendation, overview_insight, product_channel_insight
 from theme import CUSTOM_CSS
 
 ALL_PRODUCTS_LABEL = "All Products"
@@ -167,6 +167,8 @@ def build_app() -> gr.Blocks:
                 tab1_insight = gr.Markdown(
                     overview_insight(df_full, {}), elem_classes=["insight-panel"]
                 )
+                tab1_llm_btn = gr.Button("Sinh Strategic Recommendation (AI)", variant="primary")
+                tab1_llm_output = gr.Markdown(elem_classes=["llm-output"])
             with gr.Tab("Product & Channel"):
                 with gr.Row():
                     tp_rev_chart = gr.Plot(build_top_products_revenue(df_full))
@@ -178,6 +180,8 @@ def build_app() -> gr.Blocks:
                 tab2_insight = gr.Markdown(
                     product_channel_insight(df_full, {}), elem_classes=["insight-panel"]
                 )
+                tab2_llm_btn = gr.Button("Sinh Strategic Recommendation (AI)", variant="primary")
+                tab2_llm_output = gr.Markdown(elem_classes=["llm-output"])
             with gr.Tab("Geography & Customer"):
                 with gr.Row():
                     region_chart = gr.Plot(build_region_bar(df_full))
@@ -195,6 +199,8 @@ def build_app() -> gr.Blocks:
                     tab3_insight = gr.Markdown(
                         geo_customer_insight(df_full, {}), elem_classes=["insight-panel"]
                     )
+                tab3_llm_btn = gr.Button("Sinh Strategic Recommendation (AI)", variant="primary")
+                tab3_llm_output = gr.Markdown(elem_classes=["llm-output"])
             with gr.Tab("Explorer"):
                 gr.Markdown("*(Tab 4 PyGWalker - will be added in Phase 6)*")
 
@@ -246,6 +252,22 @@ def build_app() -> gr.Blocks:
         clear_btn.click(
             fn=lambda: clear_filters(year_choices, channel_choices, region_choices),
             outputs=[year_f, channel_f, region_f, product_f],
+        )
+
+        tab1_llm_btn.click(
+            fn=lambda df, f: llm_recommendation(df, f, "overview"),
+            inputs=[df_filtered_state, filter_dict_state],
+            outputs=tab1_llm_output,
+        )
+        tab2_llm_btn.click(
+            fn=lambda df, f: llm_recommendation(df, f, "product_channel"),
+            inputs=[df_filtered_state, filter_dict_state],
+            outputs=tab2_llm_output,
+        )
+        tab3_llm_btn.click(
+            fn=lambda df, f: llm_recommendation(df, f, "geo_customer"),
+            inputs=[df_filtered_state, filter_dict_state],
+            outputs=tab3_llm_output,
         )
 
     return app
