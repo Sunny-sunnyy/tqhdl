@@ -23,6 +23,19 @@ uv run python app.py
 
 App mở tại `http://127.0.0.1:7860`.
 
+## Features
+
+- 4 tab: Overview · Product & Channel · Geography & Customer · Explorer
+- Global filter bar (Year / Channel / Region / Product) chia sẻ giữa 3 tab chủ đề
+- 15 phân tích EDA với chart Plotly tương tác
+- PyGWalker kéo-thả ở tab Explorer
+- Rule-based insight tự sinh + nút LLM (OpenAI) sinh strategic recommendation
+- Custom CSS đồng bộ Canva background của dự án gốc
+
+## Architecture
+
+Xem `docs/superpowers/specs/2026-04-18-regional-sales-gradio-design.md` cho chi tiết design, `CLAUDE.md` cho codebase guide, `HANDOFF.md` cho trạng thái triển khai.
+
 ## Tech stack
 
 Python 3.11 · pandas · Plotly · Gradio · PyGWalker · OpenAI SDK · uv.
