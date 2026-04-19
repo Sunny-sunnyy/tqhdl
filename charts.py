@@ -108,7 +108,7 @@ def build_aov_histogram(df: pd.DataFrame) -> go.Figure:
     fig.update_traces(marker_color=ACCENT)
     fig.update_xaxes(title_text="Order Value (USD)")
     fig.update_yaxes(title_text="Number of Orders")
-    fig.update_layout(showlegend=False, **PLOTLY_LAYOUT)
+    fig.update_layout(showlegend=False, bargap=0.08, **PLOTLY_LAYOUT)
     return fig
 
 
