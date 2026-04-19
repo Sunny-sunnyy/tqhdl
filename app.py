@@ -7,13 +7,18 @@ import pandas as pd
 
 from charts import (
     build_aov_histogram,
+    build_channel_pie,
     build_kpi_cards_html,
+    build_margin_by_channel,
     build_monthly_profit,
     build_monthly_revenue,
+    build_price_boxplot,
     build_price_margin_scatter,
+    build_top_products_profit,
+    build_top_products_revenue,
 )
 from data import apply_filters, load_csv
-from insights import overview_insight
+from insights import overview_insight, product_channel_insight
 from theme import CUSTOM_CSS
 
 ALL_PRODUCTS_LABEL = "All Products"
@@ -55,6 +60,17 @@ def clear_filters(
         channel_choices,
         region_choices,
         [ALL_PRODUCTS_LABEL],
+    )
+
+
+def render_tab2(df_filtered: pd.DataFrame, filters: dict) -> tuple:
+    return (
+        build_top_products_revenue(df_filtered),
+        build_top_products_profit(df_filtered),
+        build_channel_pie(df_filtered),
+        build_margin_by_channel(df_filtered),
+        build_price_boxplot(df_filtered),
+        product_channel_insight(df_filtered, filters),
     )
 
 
@@ -134,7 +150,16 @@ def build_app() -> gr.Blocks:
                     overview_insight(df_full, {}), elem_classes=["insight-panel"]
                 )
             with gr.Tab("Product & Channel"):
-                gr.Markdown("*(Tab 2 content - will be added in Phase 3)*")
+                with gr.Row():
+                    tp_rev_chart = gr.Plot(build_top_products_revenue(df_full))
+                    tp_profit_chart = gr.Plot(build_top_products_profit(df_full))
+                with gr.Row():
+                    ch_pie_chart = gr.Plot(build_channel_pie(df_full))
+                    ch_margin_chart = gr.Plot(build_margin_by_channel(df_full))
+                price_box_chart = gr.Plot(build_price_boxplot(df_full))
+                tab2_insight = gr.Markdown(
+                    product_channel_insight(df_full, {}), elem_classes=["insight-panel"]
+                )
             with gr.Tab("Geography & Customer"):
                 gr.Markdown("*(Tab 3 content - will be added in Phase 4)*")
             with gr.Tab("Explorer"):
@@ -143,6 +168,10 @@ def build_app() -> gr.Blocks:
         tab1_outputs = [
             kpi_html, monthly_rev_chart, monthly_profit_chart,
             aov_chart, scatter_chart, tab1_insight,
+        ]
+        tab2_outputs = [
+            tp_rev_chart, tp_profit_chart, ch_pie_chart,
+            ch_margin_chart, price_box_chart, tab2_insight,
         ]
 
         filter_inputs = [df_full_state, year_f, channel_f, region_f, product_f]
@@ -155,6 +184,10 @@ def build_app() -> gr.Blocks:
                 fn=render_tab1,
                 inputs=[df_filtered_state, filter_dict_state, monthly_rev_mode],
                 outputs=tab1_outputs,
+            ).then(
+                fn=render_tab2,
+                inputs=[df_filtered_state, filter_dict_state],
+                outputs=tab2_outputs,
             )
 
         monthly_rev_mode.change(
