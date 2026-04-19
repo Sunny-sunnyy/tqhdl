@@ -21,7 +21,7 @@
 | Phase 5 — LLM integration | done (Task 19-20: summarize_for_llm, llm_recommendation, wire 3 LLM buttons) |
 | Phase 6 — Tab 4 Explorer | done (Task 22-23: PyGWalker to_html verified OK, wired on tab select) |
 | Phase 7 — Polish & docs | done (Task 24-26: CSS polish, README final, HANDOFF updated) |
-| Phase 8 — UI Bug Fix & Design Overhaul | — next (4 bug + full redesign) |
+| Phase 8 — UI Bug Fix & Design Overhaul | done (4 bug fixed + Grafana-style redesign) |
 | Phase 9 — (stretch) Upload CSV | — (defer post-defense) |
 
 ## Mục tiêu
@@ -305,3 +305,4 @@ Sau khi đọc xong + verify baseline, báo cáo ngắn rồi hỏi execution mo
 | 2026-04-19 | Phase 2-4 | Hoàn tất: compute_kpis, 16 chart builders (Tab 1-3), 3 rule insights, wire 3 tab vào app.py (filter chain + radio toggles). 35 tests green. |
 | 2026-04-19 | Phase 5-7 | Hoàn tất: summarize_for_llm + llm_recommendation, 3 LLM buttons, PyGWalker Explorer, CSS polish, README final. 38 tests green. App sẵn sàng demo. |
 | 2026-04-19 | Phase 8 plan | Phát hiện 4 bug khi chạy thật: chữ vô hình insight/LLM, product sort sai, histogram bargap, scatter vô nghĩa. Lên plan design overhaul (palette mới, CSS mới theo Grafana/Linear style). Ghi vào HANDOFF next task. |
+| 2026-04-19 | Phase 8 done | Fix Bug 1 (text color override), Bug 2 (numeric product sort), Bug 3 (bargap=0.08), Bug 4 (scatter → build_revenue_profit_by_channel, TDD). Design overhaul: COLORS/PALETTE mới, CUSTOM_CSS Grafana-style, charts.py ACCENT #4f8ef7, choropleth Blues. 38 tests green. |
