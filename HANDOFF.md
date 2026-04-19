@@ -18,10 +18,10 @@
 | Phase 2 — Tab 1 Overview | done (Task 6-9: compute_kpis, chart builders Tab 1, overview_insight, wire Tab 1) |
 | Phase 3 — Tab 2 Product & Channel | done (Task 11-13: 5 chart builders, product_channel_insight, wire Tab 2) |
 | Phase 4 — Tab 3 Geo & Customer | done (Task 15-17: 6 chart builders, geo_customer_insight, wire Tab 3 + top/bottom toggle) |
-| Phase 5 — LLM integration | — next |
-| Phase 6 — Tab 4 Explorer | — |
-| Phase 7 — Polish & docs | — |
-| Phase 8 — (stretch) Upload CSV | — |
+| Phase 5 — LLM integration | done (Task 19-20: summarize_for_llm, llm_recommendation, wire 3 LLM buttons) |
+| Phase 6 — Tab 4 Explorer | done (Task 22-23: PyGWalker to_html verified OK, wired on tab select) |
+| Phase 7 — Polish & docs | done (Task 24-26: CSS polish, README final, HANDOFF updated) |
+| Phase 8 — (stretch) Upload CSV | — (defer post-defense) |
 
 ## Mục tiêu
 
@@ -127,17 +127,18 @@ Global Filter Bar → gr.State(df_filtered)
 
 ## Next task chi tiết (để session mới bắt đầu ngay)
 
-**Phase 5 — Task 19: LLM integration (`summarize_for_llm` + OpenAI client)**
+**TẤT CẢ PHASE 1-7 ĐÃ HOÀN TẤT.**
 
-- Files: modify `data.py` (thêm `summarize_for_llm`), modify `insights.py` (thêm `llm_recommendation`).
-- TDD: viết test fail → implement → test pass → commit.
-- Code mẫu ở dòng ~1652 trong plan.md (`Task 19`).
-- `summarize_for_llm(df, filters, focus)` → JSON-serializable dict gửi lên LLM.
-- `llm_recommendation(df, filters, focus)` → gọi OpenAI gpt-4o-mini, trả về Markdown.
-- Không có `OPENAI_API_KEY` → trả về chuỗi warning, không crash.
-- Sau Task 19: Task 20 (wire 3 LLM button vào Tab 1/2/3 trong app.py).
-- Sau Task 20: Phase 6 (Tab 4 Explorer — PyGWalker).
-- Tổng test hiện tại: **35 passed**.
+App sẵn sàng demo: `uv run python app.py`
+- 4 tab đầy đủ nội dung và filter reactive
+- 37 pytest passed, 1 skipped (LLM test cần API key)
+- PyGWalker Explorer hoạt động (to_html + gr.HTML)
+- LLM button 3 tab (graceful khi không có key)
+
+Việc còn lại (tùy chọn):
+- Phase 8 (stretch): Upload CSV generic — defer post-defense
+- Screenshot cho README nếu muốn
+- HF Spaces deploy nếu cần portfolio
 
 ## Commands verify trạng thái (chạy đầu session mới)
 
@@ -158,7 +159,7 @@ uv run python app.py
 uv run python -c "from app import build_app; build_app(); print('OK')"
 ```
 
-Kỳ vọng: 9 pytest pass, app mở localhost:7860, header đen + filter bar + 4 tab rỗng.
+Kỳ vọng: 37 pytest pass (1 skipped nếu không có OPENAI_API_KEY), app mở localhost:7860, 4 tab đầy đủ chart + insight + LLM button.
 
 ## Resume prompt cho session mới (copy-paste)
 
@@ -218,4 +219,5 @@ Sau khi đọc xong + verify baseline, bắt đầu Bước 4.
 | 2026-04-19 | Trạng thái | Phase 1 Foundation hoàn tất (Task 1-5): deps, data.py + 9 pytest pass, theme.py, app.py skeleton 4 tab chạy HTTP 200, README enrich. Sẵn sàng Phase 2 (Tab 1 Overview). |
 | 2026-04-19 | UX | Product dropdown thêm sentinel "All Products" + Clear Filters reset về all-selected thay vì empty. Logic trong `app.py::_resolve_product_filter`. |
 | 2026-04-19 | Docs | Mở rộng HANDOFF: file inventory chi tiết, Gradio 6.x pitfalls, next-task chi tiết, verify-baseline commands, resume prompt mới model-agnostic. |
-| 2026-04-19 | Phase 2-4 | Hoàn tất: compute_kpis, 16 chart builders (Tab 1-3), 3 rule insights, wire 3 tab vào app.py (filter chain + radio toggles). 35 tests green. Next: Phase 5 LLM. |
+| 2026-04-19 | Phase 2-4 | Hoàn tất: compute_kpis, 16 chart builders (Tab 1-3), 3 rule insights, wire 3 tab vào app.py (filter chain + radio toggles). 35 tests green. |
+| 2026-04-19 | Phase 5-7 | Hoàn tất: summarize_for_llm + llm_recommendation, 3 LLM buttons, PyGWalker Explorer, CSS polish, README final. 37 tests green. App sẵn sàng demo. |

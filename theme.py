@@ -46,12 +46,18 @@ CUSTOM_CSS = """
     background: #f3f1ff; border-left: 4px solid #6b4eff;
     border-radius: 8px; padding: 16px; margin: 8px 0;
 }
-.insight-panel h4 {margin-top: 0; color: #3c3c40;}
+.insight-panel h3, .insight-panel h4 {margin-top: 0; color: #3c3c40;}
 
 .llm-output {
     background: #fff7e6; border-left: 4px solid #ed6c02;
-    border-radius: 8px; padding: 16px;
+    border-radius: 8px; padding: 16px; margin-top: 8px;
 }
+.llm-output h3 {margin-top: 0; color: #b45309;}
+
+button.primary {background: #6b4eff !important; border-color: #6b4eff !important;}
+button.primary:hover {background: #5a3de0 !important;}
 
 .tabs button.selected {color: #6b4eff !important; border-color: #6b4eff !important;}
+
+.gradio-plot {border-radius: 12px; overflow: hidden;}
 """
