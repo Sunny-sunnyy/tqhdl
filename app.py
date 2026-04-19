@@ -8,17 +8,23 @@ import pandas as pd
 from charts import (
     build_aov_histogram,
     build_channel_pie,
+    build_correlation_heatmap,
+    build_customer_bar,
+    build_customer_bubble,
     build_kpi_cards_html,
     build_margin_by_channel,
     build_monthly_profit,
     build_monthly_revenue,
     build_price_boxplot,
     build_price_margin_scatter,
+    build_region_bar,
+    build_state_choropleth,
+    build_states_dual_bar,
     build_top_products_profit,
     build_top_products_revenue,
 )
 from data import apply_filters, load_csv
-from insights import overview_insight, product_channel_insight
+from insights import geo_customer_insight, overview_insight, product_channel_insight
 from theme import CUSTOM_CSS
 
 ALL_PRODUCTS_LABEL = "All Products"
@@ -60,6 +66,18 @@ def clear_filters(
         channel_choices,
         region_choices,
         [ALL_PRODUCTS_LABEL],
+    )
+
+
+def render_tab3(df_filtered: pd.DataFrame, filters: dict, cust_mode: str) -> tuple:
+    return (
+        build_region_bar(df_filtered),
+        build_state_choropleth(df_filtered),
+        build_states_dual_bar(df_filtered),
+        build_customer_bar(df_filtered, cust_mode),
+        build_customer_bubble(df_filtered),
+        build_correlation_heatmap(df_filtered),
+        geo_customer_insight(df_filtered, filters),
     )
 
 
@@ -161,7 +179,22 @@ def build_app() -> gr.Blocks:
                     product_channel_insight(df_full, {}), elem_classes=["insight-panel"]
                 )
             with gr.Tab("Geography & Customer"):
-                gr.Markdown("*(Tab 3 content - will be added in Phase 4)*")
+                with gr.Row():
+                    region_chart = gr.Plot(build_region_bar(df_full))
+                    map_chart = gr.Plot(build_state_choropleth(df_full))
+                states_dual_chart = gr.Plot(build_states_dual_bar(df_full))
+                with gr.Row():
+                    with gr.Column():
+                        customer_mode = gr.Radio(
+                            ["top", "bottom"], value="top", label="Customer view",
+                        )
+                        customer_bar_chart = gr.Plot(build_customer_bar(df_full, "top"))
+                    bubble_chart = gr.Plot(build_customer_bubble(df_full))
+                with gr.Row():
+                    heatmap_chart = gr.Plot(build_correlation_heatmap(df_full))
+                    tab3_insight = gr.Markdown(
+                        geo_customer_insight(df_full, {}), elem_classes=["insight-panel"]
+                    )
             with gr.Tab("Explorer"):
                 gr.Markdown("*(Tab 4 PyGWalker - will be added in Phase 6)*")
 
@@ -172,6 +205,10 @@ def build_app() -> gr.Blocks:
         tab2_outputs = [
             tp_rev_chart, tp_profit_chart, ch_pie_chart,
             ch_margin_chart, price_box_chart, tab2_insight,
+        ]
+        tab3_outputs = [
+            region_chart, map_chart, states_dual_chart,
+            customer_bar_chart, bubble_chart, heatmap_chart, tab3_insight,
         ]
 
         filter_inputs = [df_full_state, year_f, channel_f, region_f, product_f]
@@ -188,12 +225,22 @@ def build_app() -> gr.Blocks:
                 fn=render_tab2,
                 inputs=[df_filtered_state, filter_dict_state],
                 outputs=tab2_outputs,
+            ).then(
+                fn=render_tab3,
+                inputs=[df_filtered_state, filter_dict_state, customer_mode],
+                outputs=tab3_outputs,
             )
 
         monthly_rev_mode.change(
             fn=render_tab1,
             inputs=[df_filtered_state, filter_dict_state, monthly_rev_mode],
             outputs=tab1_outputs,
+        )
+
+        customer_mode.change(
+            fn=render_tab3,
+            inputs=[df_filtered_state, filter_dict_state, customer_mode],
+            outputs=tab3_outputs,
         )
 
         clear_btn.click(
