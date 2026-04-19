@@ -1,0 +1,37 @@
+Tôi đang tiếp tục dự án **Regional Sales Gradio Dashboard** (đồ án kết thúc
+  môn "Trực quan hoá dữ liệu"). Repo tại:
+  /home/hieu0606sunny/tqhdl/Regional Sales Summary
+  (đã push lên https://github.com/Sunny-sunnyy/tqhdl — branch main)
+
+  ## Bước 1 — Đọc theo đúng thứ tự (KHÔNG đọc file khác trước):
+
+  1. /home/hieu0606sunny/tqhdl/Regional Sales Summary/CLAUDE.md
+  2. /home/hieu0606sunny/.claude/CLAUDE.md   (global rules của tôi)
+  3. /home/hieu0606sunny/tqhdl/Regional Sales Summary/HANDOFF.md
+  4. /home/hieu0606sunny/tqhdl/Regional Sales Summary/docs/superpowers/specs/2026-04-18-regional-sales-gradio-design.md
+  5. /home/hieu0606sunny/tqhdl/Regional Sales Summary/docs/superpowers/plans/2026-04-18-regional-sales-gradio-implementation.md
+
+  ## Bước 2 — Kiểm tra trạng thái:
+
+  - Chạy `git log --oneline -5` và `git status` để xem commit mới nhất + file dirty.
+  - Đọc mục "Trạng thái hiện tại" trong HANDOFF.md → xác định phase đang làm dở.
+  - Nếu app.py / data.py / charts.py / insights.py / theme.py đã có code → đọc hết
+    trước khi viết thêm. ĐỪNG viết lại file đã có.
+
+  ## Bước 3 — Báo cáo và hỏi tôi:
+
+  Nói ngắn gọn:
+  - Phase nào đã xong, phase nào đang dở (dựa vào HANDOFF + file tồn tại).
+  - Task tiếp theo trong plan.md là gì (số thứ tự + tên).
+  - Hỏi tôi muốn tiếp tục bằng **Subagent-Driven** (dispatch subagent từng task)
+    hay **Inline Execution** (chạy tuần tự trong session này).
+
+  ## Ràng buộc bắt buộc:
+
+  - Dùng `uv` (không pip, không python3). Luôn `uv run xxx` / `uv add xxx`.
+  - Không emoji trong code / comment / print / log.
+  - Làm incremental — mỗi task xong → dừng → chờ tôi confirm → commit → task tiếp.
+  - Tuân thủ CLAUDE.md global rules (3-Solution Rule, Debugging Protocol, TDD).
+  - Ngôn ngữ giao tiếp: tiếng Việt. Code / comment: English.
+                                            
+  Sau khi đọc xong, bắt đầu Bước 3.
