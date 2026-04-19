@@ -2,7 +2,7 @@
 
 **Dự án**: Gradio Interactive Dashboard thay thế Power BI cho USA Regional Sales Analysis 2014–2018.
 **Bối cảnh**: Đồ án kết thúc môn "Trực quan hoá dữ liệu".
-**Last updated**: 2026-04-19
+**Last updated**: 2026-04-19 (session 2)
 
 ---
 
@@ -15,10 +15,10 @@
 | Design spec | written — `docs/superpowers/specs/2026-04-18-regional-sales-gradio-design.md` |
 | Implementation plan | written — `docs/superpowers/plans/2026-04-18-regional-sales-gradio-implementation.md` |
 | Phase 1 — Foundation | done (Task 1-5: deps, data.py+tests, theme.py, app.py skeleton, README) |
-| Phase 2 — Tab 1 Overview | — next |
-| Phase 3 — Tab 2 Product & Channel | — |
-| Phase 4 — Tab 3 Geo & Customer | — |
-| Phase 5 — LLM integration | — |
+| Phase 2 — Tab 1 Overview | done (Task 6-9: compute_kpis, chart builders Tab 1, overview_insight, wire Tab 1) |
+| Phase 3 — Tab 2 Product & Channel | done (Task 11-13: 5 chart builders, product_channel_insight, wire Tab 2) |
+| Phase 4 — Tab 3 Geo & Customer | done (Task 15-17: 6 chart builders, geo_customer_insight, wire Tab 3 + top/bottom toggle) |
+| Phase 5 — LLM integration | — next |
 | Phase 6 — Tab 4 Explorer | — |
 | Phase 7 — Polish & docs | — |
 | Phase 8 — (stretch) Upload CSV | — |
@@ -74,11 +74,11 @@ Global Filter Bar → gr.State(df_filtered)
 | `app.py` | SKELETON | header + filter bar (Year/Channel/Region/Product with 'All Products' sentinel) + 4 tab rỗng + state wiring. Chưa có chart. |
 | `tests/conftest.py` | DONE | fixture `df_full`, `sample_df` |
 | `tests/test_data.py` | DONE | 9 tests green |
-| `charts.py` | TODO | Phase 2-4: 16 chart builder functions (pure, trả `plotly.graph_objects.Figure`) |
-| `insights.py` | TODO | Phase 2+: rule templates + OpenAI client wrapper |
-| `tests/test_charts.py` | TODO | smoke test chart builders |
-| `tests/test_insights.py` | TODO | Phase 2, 5 |
-| `tests/test_kpis.py` | TODO | Task 6 |
+| `charts.py` | DONE | 16 builders: Tab1 (KPI+4), Tab2 (5), Tab3 (6) — tất cả pure function + empty-df guard |
+| `insights.py` | DONE (rule-based) | `overview_insight`, `product_channel_insight`, `geo_customer_insight` — LLM client chưa có |
+| `tests/test_charts.py` | DONE | 18 smoke tests green |
+| `tests/test_insights.py` | DONE | 4 tests green (incl. geo_customer) |
+| `tests/test_kpis.py` | DONE | 4 tests green |
 | `README.md` | DONE (v1) | refine thêm screenshot ở Phase 7 |
 | `docs/superpowers/specs/2026-04-18-regional-sales-gradio-design.md` | DONE | design chi tiết, đọc trước khi code |
 | `docs/superpowers/plans/2026-04-18-regional-sales-gradio-implementation.md` | DONE | plan chi tiết từng task có code block |
@@ -127,13 +127,17 @@ Global Filter Bar → gr.State(df_filtered)
 
 ## Next task chi tiết (để session mới bắt đầu ngay)
 
-**Phase 2 — Task 6: KPI aggregation functions (TDD)**
+**Phase 5 — Task 19: LLM integration (`summarize_for_llm` + OpenAI client)**
 
-- File: modify `data.py` (thêm `compute_kpis`), create `tests/test_kpis.py`.
-- Flow chuẩn TDD: viết test fail → implement → test pass → commit.
-- Code mẫu có sẵn trong `docs/superpowers/plans/2026-04-18-regional-sales-gradio-implementation.md` ở phần **Task 6** (dòng ~550). Copy code, chạy, đừng tự sáng tác lại.
-- KPIs cần tính: `total_revenue`, `total_profit`, `profit_margin_pct`, `total_orders`, `revenue_per_order`.
-- Sau Task 6: tiếp Task 7 (build_kpi_cards UI), Task 8 (4 chart Overview), Task 9 (rule insight), Task 10 (wire vào Tab 1).
+- Files: modify `data.py` (thêm `summarize_for_llm`), modify `insights.py` (thêm `llm_recommendation`).
+- TDD: viết test fail → implement → test pass → commit.
+- Code mẫu ở dòng ~1652 trong plan.md (`Task 19`).
+- `summarize_for_llm(df, filters, focus)` → JSON-serializable dict gửi lên LLM.
+- `llm_recommendation(df, filters, focus)` → gọi OpenAI gpt-4o-mini, trả về Markdown.
+- Không có `OPENAI_API_KEY` → trả về chuỗi warning, không crash.
+- Sau Task 19: Task 20 (wire 3 LLM button vào Tab 1/2/3 trong app.py).
+- Sau Task 20: Phase 6 (Tab 4 Explorer — PyGWalker).
+- Tổng test hiện tại: **35 passed**.
 
 ## Commands verify trạng thái (chạy đầu session mới)
 
@@ -214,3 +218,4 @@ Sau khi đọc xong + verify baseline, bắt đầu Bước 4.
 | 2026-04-19 | Trạng thái | Phase 1 Foundation hoàn tất (Task 1-5): deps, data.py + 9 pytest pass, theme.py, app.py skeleton 4 tab chạy HTTP 200, README enrich. Sẵn sàng Phase 2 (Tab 1 Overview). |
 | 2026-04-19 | UX | Product dropdown thêm sentinel "All Products" + Clear Filters reset về all-selected thay vì empty. Logic trong `app.py::_resolve_product_filter`. |
 | 2026-04-19 | Docs | Mở rộng HANDOFF: file inventory chi tiết, Gradio 6.x pitfalls, next-task chi tiết, verify-baseline commands, resume prompt mới model-agnostic. |
+| 2026-04-19 | Phase 2-4 | Hoàn tất: compute_kpis, 16 chart builders (Tab 1-3), 3 rule insights, wire 3 tab vào app.py (filter chain + radio toggles). 35 tests green. Next: Phase 5 LLM. |
