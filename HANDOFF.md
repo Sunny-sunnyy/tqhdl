@@ -2,7 +2,7 @@
 
 **Dự án**: Gradio Interactive Dashboard thay thế Power BI cho USA Regional Sales Analysis 2014–2018.
 **Bối cảnh**: Đồ án kết thúc môn "Trực quan hoá dữ liệu".
-**Last updated**: 2026-04-18
+**Last updated**: 2026-04-19
 
 ---
 
@@ -10,12 +10,12 @@
 
 | Bước | Status |
 |---|---|
-| Exploration & context gathering | ✓ done |
-| Brainstorming requirements (10 Q&A) | ✓ done |
-| Design spec | ✓ written — `docs/superpowers/specs/2026-04-18-regional-sales-gradio-design.md` |
-| `plan.md` (implementation plan) | — chưa sinh (bước tiếp theo) |
-| Phase 1 — Foundation | — |
-| Phase 2 — Tab 1 Overview | — |
+| Exploration & context gathering | done |
+| Brainstorming requirements (10 Q&A) | done |
+| Design spec | written — `docs/superpowers/specs/2026-04-18-regional-sales-gradio-design.md` |
+| Implementation plan | written — `docs/superpowers/plans/2026-04-18-regional-sales-gradio-implementation.md` |
+| Phase 1 — Foundation | done (Task 1-5: deps, data.py+tests, theme.py, app.py skeleton, README) |
+| Phase 2 — Tab 1 Overview | — next |
 | Phase 3 — Tab 2 Product & Channel | — |
 | Phase 4 — Tab 3 Geo & Customer | — |
 | Phase 5 — LLM integration | — |
@@ -133,3 +133,4 @@ rules của tôi (uv, incremental, no placeholders, no emoji).
 | Date | Section | Change |
 |---|---|---|
 | 2026-04-18 | All | Initial handoff — brainstorming xong, spec written, implementation chưa start |
+| 2026-04-19 | Trạng thái | Phase 1 Foundation hoàn tất (Task 1-5): deps, data.py + 9 pytest pass, theme.py, app.py skeleton 4 tab chạy HTTP 200, README enrich. Sẵn sàng Phase 2 (Tab 1 Overview). |
