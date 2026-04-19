@@ -8,6 +8,17 @@ import pandas as pd
 from data import apply_filters, load_csv
 from theme import CUSTOM_CSS
 
+ALL_PRODUCTS_LABEL = "All Products"
+
+
+def _resolve_product_filter(products: list[str] | None) -> list[str]:
+    """If the sentinel 'All Products' is selected, return []  (no filter)."""
+    if not products:
+        return []
+    if ALL_PRODUCTS_LABEL in products:
+        return []
+    return products
+
 
 def build_filter_state(
     df_full: pd.DataFrame,
@@ -20,14 +31,23 @@ def build_filter_state(
         "year": years or [],
         "channel": channels or [],
         "us_region": regions or [],
-        "product_name": products or [],
+        "product_name": _resolve_product_filter(products),
     }
     df_filtered = apply_filters(df_full, filters)
     return df_filtered, filters
 
 
-def clear_filters() -> tuple[list, list, list, list]:
-    return [], [], [], []
+def clear_filters(
+    year_choices: list[int],
+    channel_choices: list[str],
+    region_choices: list[str],
+) -> tuple[list, list, list, list]:
+    return (
+        year_choices,
+        channel_choices,
+        region_choices,
+        [ALL_PRODUCTS_LABEL],
+    )
 
 
 def build_app() -> gr.Blocks:
@@ -36,6 +56,7 @@ def build_app() -> gr.Blocks:
     channel_choices = sorted(df_full["channel"].unique().tolist())
     region_choices = sorted(df_full["us_region"].unique().tolist())
     product_choices = sorted(df_full["product_name"].unique().tolist())
+    product_dropdown_choices = [ALL_PRODUCTS_LABEL] + product_choices
 
     with gr.Blocks(title="USA Regional Sales Dashboard") as app:
         df_full_state = gr.State(df_full)
@@ -62,7 +83,11 @@ def build_app() -> gr.Blocks:
                 region_choices, label="US Region", value=region_choices
             )
             product_f = gr.Dropdown(
-                product_choices, label="Product", multiselect=True, value=[]
+                product_dropdown_choices,
+                label="Product",
+                multiselect=True,
+                value=[ALL_PRODUCTS_LABEL],
+                info="Select 'All Products' to show every SKU, or pick specific products.",
             )
             clear_btn = gr.Button("Clear Filters", variant="secondary", scale=0)
 
@@ -85,7 +110,7 @@ def build_app() -> gr.Blocks:
             )
 
         clear_btn.click(
-            fn=clear_filters,
+            fn=lambda: clear_filters(year_choices, channel_choices, region_choices),
             outputs=[year_f, channel_f, region_f, product_f],
         )
 
