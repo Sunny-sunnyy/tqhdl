@@ -62,3 +62,25 @@ def apply_filters(df: pd.DataFrame, filters: FilterDict) -> pd.DataFrame:
         mask &= df["product_name"].isin(products)
 
     return df.loc[mask].copy()
+
+
+def compute_kpis(df: pd.DataFrame) -> dict[str, float]:
+    """Return aggregate KPIs for the given (possibly filtered) DataFrame."""
+    if df.empty:
+        return {
+            "total_revenue": 0.0,
+            "total_profit": 0.0,
+            "profit_margin_pct": 0.0,
+            "total_orders": 0,
+            "revenue_per_order": 0.0,
+        }
+    total_revenue = float(df["revenue"].sum())
+    total_profit = float(df["profit"].sum())
+    total_orders = int(df["order_number"].nunique())
+    return {
+        "total_revenue": total_revenue,
+        "total_profit": total_profit,
+        "profit_margin_pct": (total_profit / total_revenue * 100) if total_revenue else 0.0,
+        "total_orders": total_orders,
+        "revenue_per_order": total_revenue / total_orders if total_orders else 0.0,
+    }
