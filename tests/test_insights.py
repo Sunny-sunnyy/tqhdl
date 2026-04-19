@@ -2,7 +2,7 @@
 
 import pandas as pd
 
-from insights import overview_insight
+from insights import overview_insight, product_channel_insight
 
 
 def test_overview_insight_returns_markdown_with_numbers(df_full):
@@ -22,3 +22,9 @@ def test_overview_insight_empty_df():
     )
     text = overview_insight(empty, filters={})
     assert "Không có dữ liệu" in text
+
+
+def test_product_channel_insight(df_full):
+    text = product_channel_insight(df_full, filters={})
+    assert "Wholesale" in text or "Distributor" in text or "Export" in text
+    assert "Product" in text
