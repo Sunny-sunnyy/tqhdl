@@ -6,10 +6,13 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-ACCENT = "#6b4eff"
-ACCENT_SOFT = "#9b86ff"
-MUTED = "#6b6b6b"
-HEADER = "#3c3c40"
+ACCENT = "#4f8ef7"
+ACCENT_ALT = "#22c55e"
+ACCENT_SOFT = "#a78bfa"
+MUTED = "#64748b"
+HEADER = "#0f1117"
+WARNING = "#f59e0b"
+PALETTE = ["#4f8ef7", "#22c55e", "#f59e0b", "#a78bfa", "#fb923c", "#34d399"]
 
 PLOTLY_LAYOUT = dict(
     template="plotly_white",
@@ -93,7 +96,7 @@ def build_monthly_profit(df: pd.DataFrame) -> go.Figure:
         .sort_values("order_month")
     )
     fig = px.line(monthly, x="order_month", y="profit", markers=True, title="Monthly Profit Trend")
-    fig.update_traces(line_color="#2e7d32", marker_color="#2e7d32")
+    fig.update_traces(line_color=ACCENT_ALT, marker_color=ACCENT_ALT)
     fig.update_xaxes(title_text="Month")
     fig.update_yaxes(title_text="Profit (USD)")
     fig.update_layout(**PLOTLY_LAYOUT)
@@ -129,7 +132,7 @@ def build_top_products_profit(df: pd.DataFrame, n: int = 10) -> go.Figure:
         return _empty_figure()
     top = df.groupby("product_name", as_index=False)["profit"].mean().nlargest(n, "profit")
     fig = px.bar(top, x="profit", y="product_name", orientation="h", title=f"Top {n} Products by Avg Profit")
-    fig.update_traces(marker_color="#2e7d32")
+    fig.update_traces(marker_color=ACCENT_ALT)
     fig.update_yaxes(categoryorder="total ascending", title_text="")
     fig.update_xaxes(title_text="Avg Profit (USD)")
     fig.update_layout(**PLOTLY_LAYOUT)
@@ -143,7 +146,7 @@ def build_channel_pie(df: pd.DataFrame) -> go.Figure:
     fig = px.pie(
         by_ch, names="channel", values="revenue", hole=0.4,
         title="Revenue Share by Channel",
-        color_discrete_sequence=[ACCENT, ACCENT_SOFT, "#2e7d32"],
+        color_discrete_sequence=PALETTE,
     )
     fig.update_layout(**PLOTLY_LAYOUT)
     return fig
@@ -190,7 +193,7 @@ def build_revenue_profit_by_channel(df: pd.DataFrame) -> go.Figure:
     ))
     fig.add_trace(go.Bar(
         x=by_ch["channel"], y=by_ch["profit"],
-        name="Profit", marker_color="#2e7d32",
+        name="Profit", marker_color=ACCENT_ALT,
     ))
     fig.update_layout(
         title="Revenue & Profit by Channel",
@@ -241,7 +244,7 @@ def build_state_choropleth(df: pd.DataFrame) -> go.Figure:
     fig = px.choropleth(
         by_state, locations="state", locationmode="USA-states",
         color="revenue", scope="usa",
-        color_continuous_scale="Purples",
+        color_continuous_scale="Blues",
         title="Revenue by State",
     )
     fig.update_layout(**PLOTLY_LAYOUT, geo=dict(bgcolor="rgba(0,0,0,0)"))
@@ -288,7 +291,7 @@ def build_customer_bar(df: pd.DataFrame, mode: str = "top", n: int = 10) -> go.F
     else:
         selected = grp.nsmallest(n, "revenue").sort_values("revenue", ascending=False)
         title = f"Bottom {n} Customers by Revenue"
-        color = "#ed6c02"
+        color = WARNING
     fig = px.bar(selected, x="revenue", y="customer_name", orientation="h", title=title)
     fig.update_traces(marker_color=color)
     fig.update_yaxes(title_text="")
