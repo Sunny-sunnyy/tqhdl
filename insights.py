@@ -1,10 +1,17 @@
-"""Rule-based insight templates. LLM client will be added in Phase 5."""
+"""Rule-based insight templates and OpenAI LLM recommendation client."""
 
 from __future__ import annotations
 
-import pandas as pd
+import json
+import os
+from typing import Literal
 
-from data import compute_kpis
+import pandas as pd
+from dotenv import load_dotenv
+
+from data import compute_kpis, summarize_for_llm
+
+load_dotenv()
 
 
 def _fmt_money(v: float) -> str:
@@ -104,3 +111,59 @@ def geo_customer_insight(df: pd.DataFrame, filters: dict) -> str:
         f"- Bang mạnh nhất: **{top_state}** ({_fmt_money(state_rev.iloc[0])}).\n"
         f"- Khách hàng top-spender: **{top_cust}** ({_fmt_money(top_cust_val)}).\n"
     )
+
+
+_FOCUS_HINTS = {
+    "overview": "Tập trung vào bức tranh tổng thể: doanh thu, lợi nhuận, xu hướng thời gian, đơn hàng.",
+    "product_channel": "Tập trung vào hiệu suất sản phẩm và kênh phân phối, bao gồm margin và cấu trúc doanh thu.",
+    "geo_customer": "Tập trung vào phân bố địa lý và phân khúc khách hàng: vùng, bang, top/bottom customer.",
+}
+
+
+def llm_recommendation(
+    df: pd.DataFrame,
+    filters: dict,
+    focus: Literal["overview", "product_channel", "geo_customer"],
+) -> str:
+    """Call OpenAI and return a Markdown strategic recommendation."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return (
+            "> **Missing OPENAI_API_KEY.** Tạo file `.env` từ `.env.example` "
+            "và điền key của bạn để dùng tính năng này."
+        )
+
+    summary = summarize_for_llm(df, filters, focus)
+
+    try:
+        from openai import OpenAI
+
+        client = OpenAI(api_key=api_key)
+        model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+        system = (
+            "Bạn là senior sales data analyst. Hãy đưa 3-5 khuyến nghị chiến lược "
+            "ngắn gọn, hành động được, dựa trên số liệu thật trong data summary. "
+            "Mỗi bullet dưới 2 câu, tiếng Việt, có kèm số liệu cụ thể (dollar, %, tên "
+            "sản phẩm/vùng/kênh). Không bịa thông tin ngoài data summary."
+        )
+        user = (
+            f"Trọng tâm phân tích: **{focus}**.\n"
+            f"Gợi ý: {_FOCUS_HINTS[focus]}\n\n"
+            f"Data summary (JSON):\n```json\n{json.dumps(summary, ensure_ascii=False, indent=2)}\n```\n\n"
+            f"Trả về Markdown với heading '### Strategic Recommendations' và danh sách bullet."
+        )
+
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            temperature=0.4,
+            max_tokens=600,
+            timeout=15,
+        )
+        return resp.choices[0].message.content or "(empty response)"
+    except Exception as e:
+        return f"> **LLM call failed:** `{type(e).__name__}: {e}`"
