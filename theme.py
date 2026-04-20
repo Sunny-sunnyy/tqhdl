@@ -65,5 +65,32 @@ CUSTOM_CSS = """
 button.primary {background: #4f8ef7 !important; border-color: #4f8ef7 !important;}
 button.primary:hover {background: #3b7de8 !important;}
 
-.tabs button.selected {color: #4f8ef7 !important; border-color: #4f8ef7 !important;}
+/* Tab navigation — force all tab labels to be visible at all times */
+.tab-nav button,
+.tabs > div > button,
+div[class*="tab"] > button {
+    color: #0f172a !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    background: transparent !important;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-nav button:hover,
+.tabs > div > button:hover {
+    color: #4f8ef7 !important;
+    border-bottom-color: #93c5fd !important;
+    background: #eff6ff !important;
+}
+
+.tab-nav button.selected,
+.tabs > div > button.selected {
+    color: #4f8ef7 !important;
+    border-bottom: 2px solid #4f8ef7 !important;
+    font-weight: 600;
+}
 """
